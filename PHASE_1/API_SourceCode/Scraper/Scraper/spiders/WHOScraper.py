@@ -18,7 +18,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-WINDOW_SIZE = 18
+WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
                  'unknown virus', 'mystery disease', 'mysterious disease']
 SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthrax', 'botulism', 'plague',
@@ -29,8 +29,6 @@ SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthr
 WINDOW_THRESHOLD = 3
 
 load_dotenv()
-# mongodb_username = "scrapy"
-# mongodb_password = "iscrapedaweb"
 mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
 mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
@@ -287,8 +285,64 @@ class WHOScraper(CrawlSpider):
             end_window_index += 1
             progress_bar.update(1)
         progress_bar.close()
-        for match in matches:
-            print(match)
+        consolidated = consolidate_matches(matches)
+        print(consolidated)
         with open('output.json', 'w') as f:
             json.dump(matches, f)
         return []  # TODO: Return matches once we actually generate them
+
+
+def consolidate_matches(matches):
+    groups = {}
+    group_data = {}
+    prev_index = None
+    current_index = None
+    latest_group_number = 1
+    # Group all reports
+    count = 0
+    for match in matches:
+        count += 1
+        current_index = match['index']
+        if prev_index is None or current_index - prev_index <= 1:
+            pass
+        else:
+            group_data[latest_group_number]['max_index'] = prev_index
+            latest_group_number += 1
+        if f"group {latest_group_number}" not in groups:
+            groups[f'group {latest_group_number}'] = []
+            group_data[latest_group_number] = {}
+            group_data[latest_group_number]['min_index'] = current_index
+        groups[f'group {latest_group_number}'].append(match)
+        if count == len(matches):
+            group_data[latest_group_number]['max_index'] = current_index
+        prev_index = current_index
+
+    print(group_data)
+
+    # Pick best reports from each group
+    group_numbers = group_data.keys()
+    wanted_indexes = []
+    for group_number in group_numbers:
+        if group_number == min(group_numbers):
+            wanted_indexes.append(group_data[group_number]['min_index'])
+        elif group_number == max(group_numbers):
+            wanted_indexes.append(group_data[group_number]['max_index'])
+        else:
+            max_below = group_data[group_number - 1]['max_index']
+            min_above = group_data[group_number + 1]['min_index']
+            max_distance = 0
+            max_distance_index = None
+            for match in groups[f"group {group_number}"]:
+                distance_below = match['index'] - max_below
+                distance_above = min_above - match['index']
+                average_distance = (distance_above + distance_below)/2
+                if average_distance > max_distance:
+                    max_distance = average_distance
+                    max_distance_index = match['index']
+            wanted_indexes.append(max_distance_index)
+    output = []
+    for match in matches:
+        if match['index'] in wanted_indexes:
+            output.append(match)
+    return output
+
