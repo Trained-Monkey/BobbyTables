@@ -73,7 +73,6 @@ def set_up_google_cloud_service_account():
         "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nat-lang-serv-acct%40seng3011-scraper.iam.gserviceaccount.com"
     }
     with open(os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'), 'w') as f:
-        print('test')
         obj_str = json.dumps(obj)
         f.write(obj_str.replace('\\\\', '\\'))
     time.sleep(1)
@@ -161,7 +160,7 @@ class WHOScraper(CrawlSpider):
             entities = converted_entities
         else:
             # Load data from cache
-            cached_obj = cache_db.entities.find_one({'text': split_text})
+            cached_obj = cache_db.entities.find_one({'text': text})
             entities = cached_obj['entities']
 
         # Find things we need to pay attention to:
