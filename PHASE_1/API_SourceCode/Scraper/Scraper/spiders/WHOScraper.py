@@ -45,8 +45,6 @@ class WHOScraper(CrawlSpider):
     )
 
     def parse_article(self, response):
-        print(geograpy.get_place_context("H7N9  in Ho Chi Minh"))
-
         if response.url != 'https://www.who.int/emergencies/disease-outbreak-news/item/wild-poliovirus-type-1-(WPV1)-malawi':
             return
         article = response.xpath('//article')
@@ -65,6 +63,8 @@ class WHOScraper(CrawlSpider):
     # words that are in a report, and so we can generate a report
 
     def find_reports(self, text):
+        # print(geograpy.get_place_context("H7N9  in Ho Chi Minh"))
+
         # We only need to search the article up until 'Further information'
         split_text = text.split('\xa0\xa0\xa0')
         text = split_text[0]
