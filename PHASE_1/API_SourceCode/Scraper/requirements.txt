@@ -1,1 +1,4 @@
 scrapy
+datefinder
+geograpy3
+tqdm
