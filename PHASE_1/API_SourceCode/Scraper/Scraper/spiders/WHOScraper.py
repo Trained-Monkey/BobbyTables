@@ -17,7 +17,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-WINDOW_SIZE = 15
+WINDOW_SIZE = 18
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
                  'unknown virus', 'mystery disease', 'mysterious disease']
 SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthrax', 'botulism', 'plague',
@@ -191,7 +191,8 @@ class WHOScraper(CrawlSpider):
             matched_syndrome_list = []
 
             dates = datefinder.find_dates(window_string)
-            if len(list(dates)) > 0:
+            dates_list = list(dates)
+            if len(dates_list) > 0:
                 contains_date = True
 
             for disease_obj in disease_list:
@@ -251,7 +252,7 @@ class WHOScraper(CrawlSpider):
 
             report_dict = {
                 'index': int(start_window_index + (WINDOW_SIZE / 2)),
-                'dates': list(dates),
+                'dates': dates_list,
                 'locations': locations,
                 'diseases': list(matched_disease_list),
                 'syndromes': list(matched_syndrome_list),
