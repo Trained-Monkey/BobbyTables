@@ -153,3 +153,4 @@ cython_debug/
 
 loggy.txt
 service_account.json
+output.json
