@@ -8,6 +8,7 @@ import re
 import datefinder
 import geograpy
 import scrapy
+import nltk
 from tqdm import tqdm
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
@@ -24,6 +25,11 @@ WINDOW_THRESHOLD = 3
 
 
 class WHOScraper(CrawlSpider):
+
+    def __init__(self):
+        super().__init__()
+        self.set_up_nltk()
+
     name = 'WHOScraper'
 
     custom_settings = {
@@ -161,3 +167,12 @@ class WHOScraper(CrawlSpider):
         with open('output.json', 'w') as f:
             json.dump(matches, f)
         return []  # TODO: Return matches once we actually generate them
+
+    def set_up_nltk(self):
+        nltk.downloader.download('maxent_ne_chunker')
+        nltk.downloader.download('words')
+        nltk.downloader.download('treebank')
+        nltk.downloader.download('maxent_treebank_pos_tagger')
+        nltk.downloader.download('punkt')
+        # since 2020-09
+        nltk.downloader.download('averaged_perceptron_tagger')
