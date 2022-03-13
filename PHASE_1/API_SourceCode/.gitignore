@@ -152,3 +152,4 @@ cython_debug/
 #.idea/
 
 loggy.txt
+service_account.json
