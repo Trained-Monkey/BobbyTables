@@ -28,8 +28,6 @@ SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthr
 WINDOW_THRESHOLD = 3
 
 load_dotenv()
-# mongodb_username = "scrapy"
-# mongodb_password = "iscrapedaweb"
 mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
 mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
