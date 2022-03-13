@@ -17,7 +17,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-WINDOW_SIZE = 5
+WINDOW_SIZE = 15
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
                  'unknown virus', 'mystery disease', 'mysterious disease']
 SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthrax', 'botulism', 'plague',
@@ -151,6 +151,7 @@ class WHOScraper(CrawlSpider):
         # Check if the text has already been parsed
         if cache_db.entities.count_documents({'text': text}, limit=1) == 0:
             # Parse text
+            print('Querying google')
             document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
             entities = gc_client.analyze_entities(document=document)
             converted_entities = convert_entity_list_to_json(entities)
@@ -160,6 +161,7 @@ class WHOScraper(CrawlSpider):
             entities = converted_entities
         else:
             # Load data from cache
+            print('Loading from cache')
             cached_obj = cache_db.entities.find_one({'text': text})
             entities = cached_obj['entities']
 
@@ -209,6 +211,15 @@ class WHOScraper(CrawlSpider):
 
             for syndrome_obj in syndrome_list:
                 syndrome = syndrome_obj['name']
+                if syndrome.lower().startswith('acute'):
+                    # There may be symptoms that are not acute, try searching for those
+                    split_syndrome = syndrome.lower().split('acute ')
+                    merged_syndrome = ' '.join(split_syndrome)
+                    while merged_syndrome.startswith(' '):
+                        merged_syndrome = merged_syndrome[1:]
+                    if merged_syndrome in window_string.lower():
+                        contains_syndrome = True
+                        matched_syndrome_list.append(syndrome)
                 if syndrome.lower() in window_string.lower():
                     contains_syndrome = True
                     matched_syndrome_list.append(syndrome)
