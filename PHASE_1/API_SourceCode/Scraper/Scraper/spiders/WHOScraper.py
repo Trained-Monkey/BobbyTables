@@ -1,3 +1,4 @@
+from asyncio import start_server
 import os
 import json
 import sys
@@ -232,7 +233,25 @@ class WHOScraper(CrawlSpider):
                     contains_location = True
                     locations.append(entity_location)
 
+            valid_locations = []
+            counter = 0
+            with open(os.path.join(os.path.dirname(__file__), '../../location_data.json'), encoding='utf-8') as f:
+                for line in f:
+                    counter += 1
+                    line = line.lstrip()
+                    if line.startswith("\"name\": "):
+                        line = re.sub(r'"name": ', '', line)
+                    elif line.startswith("\"states\": ") or line.startswith("\"cities\": "):
+                        continue
+                    elif line.startswith("{") or line.startswith("}") or line.startswith("]"):
+                        continue
+                    else:
+                        line = line[1:-2]
 
+                    for location in locations:
+                        if line.startswith(location):
+                            valid_locations.append(line)
+            locations = valid_locations
 
             # # print(f"{start_window_index}: {window_string}")
             # places = geograpy.get_place_context(text=window_string)
