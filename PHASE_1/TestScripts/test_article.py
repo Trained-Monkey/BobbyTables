@@ -81,7 +81,7 @@ def test_get_article_invalid_format_date():
 Tests article with start_date after end_date
 """
 def test_get_article_invalid_date_range():
-    query_string = formulate_query_string("Australia", "2023-01-3000:00:00", "2022-01-3000:00:00", "Zika")
+    query_string = formulate_query_string("Australia", "2023-01-30T00:00:00", "2022-01-30T00:00:00", "Zika")
     response = client.get("/article" + query_string)
 
     assert response.status_code == 400
@@ -91,7 +91,7 @@ def test_get_article_invalid_date_range():
 Tests article with invalid version header
 """
 def test_get_article_invalid_version():
-    query_string = formulate_query_string("Australia", "2021-01-3000:00:00", "2022-01-3000:00:00", "Zika")
+    query_string = formulate_query_string("Australia", "2021-01-30T00:00:00", "2022-01-30T00:00:00", "Zika")
     response = client.get("/article" + query_string, headers = {"version": "vioeq"})
 
     assert response.status_code == 400
