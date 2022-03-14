@@ -5,6 +5,7 @@ import sys
 import traceback
 import re
 import time
+import datetime
 from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
@@ -17,6 +18,8 @@ from tqdm import tqdm
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
+
+SCRAPER_VERSION = '0.0.1'
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
@@ -112,13 +115,19 @@ class WHOScraper(CrawlSpider):
 
     rules = (
         Rule(LinkExtractor(allow=r'/item/'), callback='parse_article'),
-        # Rule(LinkExtractor(allow=r'\d+'), follow=True), # TODO: Re-enable this once we have it works on one site
+        Rule(LinkExtractor(allow=r'\d+'), follow=True), # TODO: Re-enable this once we have it works on one site
 
     )
 
     def parse_article(self, response):
-        if response.url != 'https://www.who.int/emergencies/disease-outbreak-news/item/wild-poliovirus-type-1-(WPV1)-malawi':
-            return
+        updating = False
+        if db.articles.count_documents({'url': response.url}, limit=1) != 0:
+            # Check if the document we do already have has been parsed with the same SCRAPER_VERSION
+            exists = db.articles.count_documents({'url': response.url, 'scraper_version': SCRAPER_VERSION}, limit=1) == 1
+            if exists:
+                return
+            else:
+                updating = True
         article = response.xpath('//article')
         article_text = ""
         if article is not None:
@@ -127,9 +136,24 @@ class WHOScraper(CrawlSpider):
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
         article_headline = response.xpath("//h1/text()").get().strip('\n')
-        # article_reports = self.find_reports(article_text)  # TODO: Fix reports to actually generate reports
-        test = self.find_reports(
-            "Three people infected by what is thought to be H5N1 or H7N9  in Ho Chi Minh city. First infection occurred on 1 Dec 2018, and latest is report on 10 December. Two in hospital, one has recovered. Furthermore, two people with fever and rash infected by an unknown disease.")
+        article_reports = self.find_reports(article_text)
+        output = {
+            'url': article_url,
+            'date_of_publication': article_date,
+            'headline': article_headline,
+            'main_text': article_text,
+            'reports': article_reports,
+            'scraper_version': SCRAPER_VERSION,
+        }
+        if updating:
+            db.articles.update_one({'url': article_url}, output)
+        else:
+            db.articles.insert_one(output)
+
+
+        # test = self.find_reports("Three people infected by what is thought to be H5N1 or H7N9  in Ho Chi Minh city.
+        # First infection occurred on 1 Dec 2018, and latest is report on 10 December. Two in hospital,
+        # one has recovered. Furthermore, two people with fever and rash infected by an unknown disease.")
 
     # WIP
     # This is a basic implementation, though words we are looking for need to be improved so we can successfully detect
@@ -150,7 +174,6 @@ class WHOScraper(CrawlSpider):
         # Check if the text has already been parsed
         if cache_db.entities.count_documents({'text': text}, limit=1) == 0:
             # Parse text
-            print('Querying google')
             document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
             entities = gc_client.analyze_entities(document=document)
             converted_entities = convert_entity_list_to_json(entities)
@@ -160,7 +183,6 @@ class WHOScraper(CrawlSpider):
             entities = converted_entities
         else:
             # Load data from cache
-            print('Loading from cache')
             cached_obj = cache_db.entities.find_one({'text': text})
             entities = cached_obj['entities']
 
@@ -286,10 +308,24 @@ class WHOScraper(CrawlSpider):
             progress_bar.update(1)
         progress_bar.close()
         consolidated = consolidate_matches(matches)
-        print(consolidated)
+
+        # Format to expected format
+        output = []
+        for match in consolidated:
+            if len(match['dates']) == 1:
+                event_date = match['dates'][0].strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                event_date = f"{match['dates'][0].strftime('%Y-%m-%d %H:%M:%S')} to {match['dates'][1].strftime('%Y-%m-%d %H:%M:%S')}"
+            formatted = {
+                'event-date': event_date,
+                'locations': match['locations'],
+                'diseases': match['diseases'],
+                'syndromes': match['syndromes']
+            }
+            output.append(formatted)
         with open('output.json', 'w') as f:
-            json.dump(matches, f)
-        return []  # TODO: Return matches once we actually generate them
+            json.dump(output, f)
+        return output
 
 
 def consolidate_matches(matches):
@@ -316,8 +352,6 @@ def consolidate_matches(matches):
         if count == len(matches):
             group_data[latest_group_number]['max_index'] = current_index
         prev_index = current_index
-
-    print(group_data)
 
     # Pick best reports from each group
     group_numbers = group_data.keys()
