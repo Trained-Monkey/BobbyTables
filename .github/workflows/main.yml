@@ -9,8 +9,6 @@ on:
   pull_request_target:
     types:
       - closed
-    branches:
-      - main
 
 jobs:
   # Check out the following article for more inspiration on setting up a
