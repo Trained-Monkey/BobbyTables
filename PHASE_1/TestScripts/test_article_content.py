@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.insert(1, os.path.join(sys.path[0], '..', 'API_SourceCode'))
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), '..', 'API_SourceCode'))
 
 from main import app
 from fastapi.testclient import TestClient
