@@ -44,11 +44,13 @@ def test_get_article_report():
     # Needs an article in the database
     assert response.status_code == 200
     assert response.json()["max_articles"] > 0
+    reports = response.json()["articles"][0]["article"]["reports"]
 
     articleId = response.json()["articles"][0]["articleId"]
     response = client.get("/article/" + str(articleId) + "/report")
 
     assert response.status_code == 200
+    assert response.json()["report"] == reports
 
 """
 Test article report with invalid version header
@@ -67,6 +69,9 @@ Test article report with version header
 def test_report_version_header():
     response = client.get("/article")
     articleId = response.json()["articles"][0]["articleId"]
+    reports = response.json()["articles"][0]["article"]["reports"]
+    
     response = client.get("/article/" + str(articleId) + "/report", header={"version": "v1.0"})
 
     assert response.status_code == 200
+    assert response.json()["report"] == reports
