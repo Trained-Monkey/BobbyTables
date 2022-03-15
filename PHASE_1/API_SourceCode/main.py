@@ -189,7 +189,7 @@ async def articleAdvice(
 Gets the reports contained in a given article
 
 Headers:
- * version: string                - Version of the API
+ * version: string                - Version of the API 
 
 Parameters:
  * articleId: integer, required   - Article to get content section from
