@@ -1,6 +1,17 @@
 from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
+from fastapi import Query, Header
+from fastapi import status
+from Type.Article import Article
 
-app = FastAPI()
+tags_metadata = [
+    {
+        "name": "article",
+        "description": "Operations on retrieving from articles",
+    }
+]
+
+app = FastAPI(openapi_tags=tags_metadata)
 
 """
 Routes set up according to stoplight documentation
@@ -34,8 +45,15 @@ Example response:
     "max_articles": 1
 }
 """
-@app.get("/article")
-async def article():
+@app.get("/article", tags=["article"], response_model=Article)
+async def article(
+    end_date: str = Query(... ,example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
+    start_date: str = Query(...,example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
+    key_terms: str = Query(..., example="zika"),
+    location: str = Query(..., example="vietnam"),
+    limit: int = 20, 
+    offset: int = 0,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Article route not implemented"}
 
 """
@@ -58,8 +76,10 @@ Example response:
     "content": "Content section of article 1"
 }
 """
-@app.get("/article/{articleId}/content")
-async def articleContent(articleId):
+@app.get("/article/{articleId}/content", tags=["article"])
+async def articleContent(
+    articleId: int,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Content route not implemented"}
 
 """
@@ -82,8 +102,10 @@ Example response:
     "response": "Response section of article 1"
 }
 """
-@app.get("/article/{articleId}/response")
-async def articleResponse(articleId):
+@app.get("/article/{articleId}/response", tags=["article"])
+async def articleResponse(
+    articleId: int,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Response route not implemented"}
 
 """
@@ -106,8 +128,10 @@ Example response:
     "assessment": "Assessment section of article 1"
 }
 """
-@app.get("/article/{articleId}/assessment")
-async def articleAssessment(articleId):
+@app.get("/article/{articleId}/assessment", tags=["article"])
+async def articleAssessment(
+    articleId: int,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Assessment route not implemented"}
 
 """
@@ -130,8 +154,10 @@ Example response:
     "source": "Source section of article 1"
 }
 """
-@app.get("/article/{articleId}/source")
-async def articleSource(articleId):
+@app.get("/article/{articleId}/source", tags=["article"])
+async def articleSource(
+    articleId: int,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Source route not implemented"}
 
 """
@@ -154,15 +180,17 @@ Example resonse:
     "advice": "Advice section of article 1"
 }
 """
-@app.get("/article/{articleId}/advice")
-async def articleAdvice(articleId):
+@app.get("/article/{articleId}/advice", tags=["article"])
+async def articleAdvice(
+    articleId: int,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Advice route not implemented"}
 
 """
 Gets the reports contained in a given article
 
 Headers:
- * version: string                - Version of the API
+ * version: string                - Version of the API 
 
 Parameters:
  * articleId: integer, required   - Article to get content section from
@@ -178,6 +206,47 @@ Example resonse:
     "report": [<report object>]
 }
 """
-@app.get("/article/{articleId}/report")
-async def articleReport(articleId):
+@app.get("/article/{articleId}/report", tags=["article"])
+async def articleReport(
+    articleId: int,
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Report route not implemented"}
+
+
+@app.get("/healthcheck", status_code=status.HTTP_200_OK)
+def perform_healthcheck():
+    """
+        Simple route for the GitHub Actions to healthcheck on.
+
+        More info is available at:
+        https://github.com/akhileshns/heroku-deploy#health-check
+
+        It basically sends a GET request to the route & hopes to get a "200"
+        response code. Failing to return a 200 response code just enables
+        the GitHub Actions to rollback to the last version the project was
+        found in a "working condition". It acts as a last line of defense in
+        case something goes south.
+
+        Additionally, it also returns a JSON response in the form of:
+
+        {
+          'healthcheck': 'Everything OK!'
+        }
+        """
+    return {'healthcheck': 'Everything OK!'}
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+        
+    openapi_schema = get_openapi(
+        title="Pandemic API",
+        version="1.0",
+        description="API to get information on pandemic articles extracted from the WHO website",
+        routes=app.routes,
+    )
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
