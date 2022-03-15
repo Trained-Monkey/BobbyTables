@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
-from Type.Article import Article
 
 tags_metadata = [
     {
@@ -44,7 +43,7 @@ Example response:
     "max_articles": 1
 }
 """
-@app.get("/article", tags=["article"], response_model=Article)
+@app.get("/article", tags=["article"])
 async def article(
     end_date: str = Query(... ,example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
     start_date: str = Query(...,example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
@@ -183,6 +182,7 @@ Example resonse:
 async def articleAdvice(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
+    ...
     return {"message" : "Advice route not implemented"}
 
 """
