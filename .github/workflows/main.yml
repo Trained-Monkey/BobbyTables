@@ -6,6 +6,8 @@ name: Deploy # Name of the workflow
 # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
 on: 
   push:
+    branches:
+      - main
     paths: "PHASE_1/API_SourceCode/**"
 
 jobs:
