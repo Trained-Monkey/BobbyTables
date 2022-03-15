@@ -1,6 +1,6 @@
 # SENG3011 Bobby Tables - Backend
 
-Running server locally
+## Running server locally
 Install requirements with pip
 $ pip install -r requirements.txt
 
