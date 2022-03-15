@@ -35,4 +35,4 @@ jobs:
           heroku_app_name: "seng3011-bobby-tables-backend"
           heroku_email: "cooperbar@gmail.com"
           healthcheck: "https://seng3011-bobby-tables-backend.herokuapp.com/healthcheck"
-          rollbackonhealthcheckfailed: true
+          rollbackonhealthcheckfailed: false
