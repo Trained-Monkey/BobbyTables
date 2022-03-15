@@ -5,7 +5,10 @@ name: Deploy # Name of the workflow
 # Events that trigger a workflow:
 # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
 on: 
-  push:
+  # Only deploys when PR is closed on main branch
+  pull_request_target:
+    types:
+      - closed
     branches:
       - main
 
@@ -21,6 +24,8 @@ jobs:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute
     #needs: [test, lint]
+    # Only runs if closed PR is merged into main
+    if: github.event.pull_request_target.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
