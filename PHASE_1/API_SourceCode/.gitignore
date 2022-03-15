@@ -1,4 +1,5 @@
 # Hack until we put actual files in here because I can't upload empty directories
+__pycache__
 Type/__pycache__/*
 /__pycache__
 !.gitignore
