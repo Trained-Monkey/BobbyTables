@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 
 sys.path.insert(1, os.path.join(sys.path[0], '..', 'API_SourceCode'))
@@ -28,6 +29,44 @@ def formulate_query_string(location, start_date, end_date, keyterms):
 Date format: yyyy-MM-ddTHH:mm:ss
 """
 
+article1 = json.dumps({
+   "url": "www.who.int/lalala_fake_article",
+   "date_of_publication": "2018-12-12 xx:xx:xx",
+   "headline": "Outbreaks in Southern Vietnam",
+   "main_text": "Three people infected by what is thought to be H5N1 or H7N9  in Ho Chi Minh city. First infection occurred on 1 Dec 2018, and latest is report on 10 December. Two in hospital, one has recovered. Furthermore, two people with fever and rash infected by an unknown disease.",
+   "reports": [
+      {
+         "event_date": "2018-12-01 xx:xx:xx to 2018-12-10 xx:xx:xx",
+         "locations": [
+            {
+               "geonames-id": 1566083
+            }
+         ],
+         "diseases": [
+            "influenza a/h5n1",
+            "influenza a/h7n9"
+         ],
+         "syndromes": [
+
+         ]
+      },
+      {
+         "event_date": "2018-12-01 xx:xx:xx to 2018-12-10 xx:xx:xx",
+         "locations": [
+            {
+               "geonames-id":1566083
+            }
+         ],
+         "diseases": [
+            "unknown"
+         ],
+         "syndromes": [
+            "Acute fever and rash"
+         ]
+      }
+   ]
+})
+
 """
 Tests article route with missing parameters, expecting 400 Bad Request
 """
@@ -40,14 +79,16 @@ def test_get_article_missing_parameter():
 Tests article with valid parameters, no offset and limit
 """
 def test_get_article_missing_defaults():
-    query_string = formulate_query_string("Australia", "2021-01-30T00:00:00", "2022-01-30T00:00:00", "Zika")
+    query_string = formulate_query_string("Vietnam", "2018-12-11T00:00:00", "2018-12-13T00:00:00", "")
     response = client.get("/article" + query_string)
 
     assert response.status_code == 200
     result = response.json()
 
-    # Default limit should be set to 20
-    assert len(result["articles"]) == 20
+    # Only 1 article in the testing database should match
+    assert len(result["max_articles"]) == 1
+    resultArticle = result["articles"][0]["article"]
+    assert resultArticle == article1
 
 """
 Tests article with valid parameters, nonsensical offset
