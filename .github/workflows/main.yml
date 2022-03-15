@@ -6,7 +6,8 @@ name: Deploy # Name of the workflow
 # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
 on: 
   push:
-    paths: "PHASE_1/API_SourceCode/**"
+    branches:
+      - main
 
 jobs:
   # Check out the following article for more inspiration on setting up a
@@ -29,6 +30,7 @@ jobs:
         # https://github.com/akhileshns/heroku-deploy
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
+          appdir: "PHASE_1/API_SourceCode"
           heroku_api_key: "4ede6c72-e042-4982-b21c-3479fd07e4cc"
           heroku_app_name: "seng3011-bobby-tables-backend"
           heroku_email: "cooperbar@gmail.com"
