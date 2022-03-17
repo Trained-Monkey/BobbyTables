@@ -1,4 +1,4 @@
-# This is the .github/workflows/main.yml
+# This is the .github/workflows/deploy_api.yml
 
 name: Deploy # Name of the workflow
 
