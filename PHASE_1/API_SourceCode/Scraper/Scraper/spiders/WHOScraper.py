@@ -135,7 +135,7 @@ class WHOScraper(CrawlSpider):
                 article_text += p.get()
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
-        date_object = datetime.strptime(article_date, "%d %B %Y")
+        date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
         article_reports = self.find_reports(article_text)
         output = {
