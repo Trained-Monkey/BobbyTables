@@ -1,6 +1,6 @@
 # This is the .github/workflows/deploy_api.yml
 
-name: Deploy # Name of the workflow
+name: Deploy API # Name of the workflow
 
 # Events that trigger a workflow:
 # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
