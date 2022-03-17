@@ -7,7 +7,7 @@ from Type.HTTP_Response import *
 
 tags_metadata = [
     {
-        "name": "article",
+        "name": "Article",
         "description": "Operations on retrieving from articles",
     }
 ]
@@ -50,7 +50,7 @@ responses = {
     400: {"model": HTTP_400}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article", tags=["article"], response_model=Article, responses=responses)
+@app.get("/article", tags=["Article"], response_model=Article, responses=responses)
 async def article(
     end_date: str = Query(... ,example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
     start_date: str = Query(...,example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
@@ -86,8 +86,8 @@ responses = {
     404: {"model": HTTP_404}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/content", tags=["article"], responses=responses)
-async def articleContent(
+@app.get("/article/{articleId}/content", tags=["Article"], responses=responses)
+async def article_content(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Content route not implemented"}
@@ -116,8 +116,8 @@ responses = {
     404: {"model": HTTP_404}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/response", tags=["article"], responses=responses)
-async def articleResponse(
+@app.get("/article/{articleId}/response", tags=["Article"], responses=responses)
+async def article_response(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Response route not implemented"}
@@ -146,8 +146,8 @@ responses = {
     404: {"model": HTTP_404}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/assessment", tags=["article"], responses=responses)
-async def articleAssessment(
+@app.get("/article/{articleId}/assessment", tags=["Article"], responses=responses)
+async def article_assessment(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Assessment route not implemented"}
@@ -176,8 +176,8 @@ responses = {
     404: {"model": HTTP_404}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/source", tags=["article"], responses=responses)
-async def articleSource(
+@app.get("/article/{articleId}/source", tags=["Article"], responses=responses)
+async def article_source(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Source route not implemented"}
@@ -206,8 +206,8 @@ responses = {
     404: {"model": HTTP_404}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/advice", tags=["article"], responses=responses)
-async def articleAdvice(
+@app.get("/article/{articleId}/advice", tags=["Article"], responses=responses)
+async def article_advice(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Advice route not implemented"}
@@ -236,8 +236,8 @@ responses = {
     404: {"model": HTTP_404}, 
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/report", tags=["article"], responses=responses)
-async def articleReport(
+@app.get("/article/{articleId}/report", tags=["Article"], responses=responses)
+async def article_report(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     return {"message" : "Report route not implemented"}
