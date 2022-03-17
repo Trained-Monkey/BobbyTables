@@ -22,7 +22,7 @@ with open('requirements.txt', 'w') as f:
 # Set up scrapinghub.yml
 with open('scrapinghub.yml', 'r') as f:
     d = yaml.load(f.read(), Loader=yaml.FullLoader)
-    d['apikey'] = os.environ['APIKEY']
+    d['apikey'] = os.environ['ZYTE_API_KEY']
 
 # update config to file
 with open('scrapinghub.yml', 'w') as f:
