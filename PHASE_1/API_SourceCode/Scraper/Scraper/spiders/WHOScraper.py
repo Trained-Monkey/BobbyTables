@@ -131,15 +131,16 @@ class WHOScraper(CrawlSpider):
         article = response.xpath('//article')
         article_text = ""
         if article is not None:
-            for p in article.xpath('.//p/text()'):
+            for p in article.xpath(".//p/text() | .//li/text()"):
                 article_text += p.get()
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
+        date_object = datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
         article_reports = self.find_reports(article_text)
         output = {
             'url': article_url,
-            'date_of_publication': article_date,
+            'date_of_publication': date_object,
             'headline': article_headline,
             'main_text': article_text,
             'reports': article_reports,
@@ -203,7 +204,6 @@ class WHOScraper(CrawlSpider):
             # print(f'{end_window_index} < {len(text_words)}')
             window = text_words[start_window_index:end_window_index]
             window_string = ' '.join(window)
-            window_score = 0
             contains_date = False
             contains_location = False
             contains_disease = False
@@ -257,7 +257,6 @@ class WHOScraper(CrawlSpider):
             counter = 0
             with open(os.path.join(os.path.dirname(__file__), '../../location_data.json'), encoding='utf-8') as f:
                 for line in f:
-                    counter += 1
                     line = line.lstrip()
                     if line.startswith("\"name\": "):
                         line = re.sub(r'"name": ', '', line)
@@ -273,22 +272,6 @@ class WHOScraper(CrawlSpider):
                             valid_locations.append(line)
             locations = valid_locations
 
-            # # print(f"{start_window_index}: {window_string}")
-            # places = geograpy.get_place_context(text=window_string)
-            # if len(places.countries) > 0 or len(places.regions) > 0 or len(places.cities) > 0 or len(places.other) > 0:
-            #     contains_location = True
-            # else:
-            #     if 'city' in window_string or 'City' in window_string:
-            #         r = re.compile(r'(([A-Z][a-z-]+)+ )+[Cc]ity')
-            #         result = r.match(window_string)
-            #         if result is not None:
-            #             print(result.group(0))
-            #             print(geograpy.locateCity(result.group(0)))
-            #             places.cities.append(result.group(0))
-
-            # my regex: ^(\d{2}) (\w+) (\d{4})$
-            # report regex: ^(\  d{4})-(\d\d|xx)-(\d\d|xx) (\d\d|xx):(\d\d|xx):(\d\d|xx)$
-
             report_dict = {
                 'index': int(start_window_index + (WINDOW_SIZE / 2)),
                 'dates': dates_list,
@@ -298,8 +281,7 @@ class WHOScraper(CrawlSpider):
                 'debug': {
                 }
             }
-            # print(f"{window_string}")
-            # print(f"Date: {contains_date}, Location: {contains_location}, Syndrome: {contains_syndrome}, Disease: {contains_disease}")
+            
             if contains_date and contains_location and (contains_syndrome or contains_disease):
                 matches.append(report_dict)
 
