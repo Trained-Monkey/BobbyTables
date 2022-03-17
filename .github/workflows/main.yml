@@ -19,7 +19,7 @@ jobs:
   # Lint & format your code over here.
   deploy:
     # If the test & lint jobs don't pass,
-    # the deploy job willn't even execute
+    # the deploy job will not even execute
     #needs: [test, lint]
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +30,7 @@ jobs:
         # https://github.com/akhileshns/heroku-deploy
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
-          appdir: "PHASE_1/API_SourceCode"
+          appdir: "PHASE_1/API_SourceCode/API"
           heroku_api_key: "4ede6c72-e042-4982-b21c-3479fd07e4cc"
           heroku_app_name: "seng3011-bobby-tables-backend"
           heroku_email: "cooperbar@gmail.com"
