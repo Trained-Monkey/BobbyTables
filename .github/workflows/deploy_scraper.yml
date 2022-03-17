@@ -19,7 +19,7 @@ jobs:
         pip install pyyaml shub
     - name: Deploy to zyte
       working-directory: ./PHASE_1/API_SourceCode/Scraper
-      if: github.ref == 'refs/heads/master'
+      #if: github.ref == 'refs/heads/master'
       run: python3 set_up_deployment_variables.py && shub deploy
       env:
         MONGODB_USER: ${{ secrets.MONGODB_USER }}
