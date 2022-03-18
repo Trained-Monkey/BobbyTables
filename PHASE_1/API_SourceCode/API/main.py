@@ -5,6 +5,8 @@ from fastapi import status
 from Type.Article import Article
 from Type.HTTP_Response import *
 
+import helpers
+
 tags_metadata = [
     {
         "name": "article",
@@ -59,7 +61,8 @@ async def article(
     limit: int = 20, 
     offset: int = 0,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-
+    query = helpers.filter_articles(end_date, start_date, key_terms, location, limit, offset)
+    # TODO: turn dates into string, and key_terms in to list and format results into expected format
     return {"message" : "Article route not implemented"}
 
 """
