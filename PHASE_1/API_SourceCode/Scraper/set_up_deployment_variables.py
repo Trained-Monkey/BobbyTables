@@ -38,5 +38,5 @@ secrets = {
     'client_email': os.environ.get('GC_SERVICE_ACC_CLIENT_EMAIL'),
     'client_id': os.environ.get('GC_SERVICE_ACC_CLIENT_ID'),
 }
-with open('secrets.json', 'w') as f:
+with open(os.path.join('Scraper', 'resources', 'secrets.json'), 'w') as f:
     json.dump(secrets, f)

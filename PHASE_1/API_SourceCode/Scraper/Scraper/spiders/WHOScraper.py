@@ -7,6 +7,7 @@ import re
 import time
 import datetime
 from urllib.parse import quote_plus
+import pkgutil
 
 from dotenv import load_dotenv
 import pymongo
@@ -36,8 +37,8 @@ try:
     mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
     mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
 except TypeError:
-    with open(os.path.join(os.path.dirname(__file__), '../../secrets.json')) as f:
-        secrets = json.load(f)
+    data = pkgutil.get_data("Scraper", "resources/secrets.json")
+    secrets = json.loads(data.decode('utf-8'))
     mongodb_username = secrets['mongodb_username']
     mongodb_password = secrets['mongodb_password']
 
@@ -74,8 +75,8 @@ def set_up_google_cloud_service_account():
         client_email = str(os.getenv('GC_SERVICE_ACC_CLIENT_EMAIL'))
         client_id = str(os.getenv('GC_SERVICE_ACC_CLIENT_ID'))
     except TypeError:
-        with open(os.path.join(os.path.dirname(__file__), '../../secrets.json')) as f:
-            gc_secrets = json.load(f)
+        gc_data = pkgutil.get_data("Scraper", "resources/secrets.json")
+        gc_secrets = json.loads(gc_data.decode('utf-8'))
         private_key_id = gc_secrets['private_key_id']
         private_key = gc_secrets['private_key']
         client_email = gc_secrets['client_email']
