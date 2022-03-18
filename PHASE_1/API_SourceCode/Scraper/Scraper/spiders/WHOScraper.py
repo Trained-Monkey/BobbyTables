@@ -19,7 +19,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.0.2'
+SCRAPER_VERSION = '0.0.7'
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
