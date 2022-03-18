@@ -6,6 +6,7 @@ from Type.Article import Article
 from Type.HTTP_Response import *
 
 import helpers
+from datetime import datetime
 
 tags_metadata = [
     {
@@ -60,10 +61,21 @@ async def article(
     location: str = Query(..., example="vietnam"),
     limit: int = 20, 
     offset: int = 0,
-    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    query = helpers.filter_articles(end_date, start_date, key_terms, location, limit, offset)
-    # TODO: turn dates into string, and key_terms in to list and format results into expected format
-    return {"message" : "Article route not implemented"}
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')): # TODO: Handle API version
+    end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    start_date_datetime = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    terms_list = key_terms.split(',')
+    query, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
+    output = []
+    for result in query:
+        output.append({
+            'article': result,
+            'articleId': result['id']
+        })
+    return {
+        "articles": output,
+        "max_articles": max_articles
+    }
 
 """
 Gets the content section for a given article
