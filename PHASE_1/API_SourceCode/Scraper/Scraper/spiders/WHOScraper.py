@@ -148,6 +148,9 @@ class WHOScraper(CrawlSpider):
         date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
         article_reports = self.find_reports(article_text)
+        article_locations = []
+        for report in article_reports:
+            article_locations += report['locations']
         article_terms = self.find_search_terms(article_text)
         output = {
             'url': article_url,
@@ -157,6 +160,7 @@ class WHOScraper(CrawlSpider):
             'reports': article_reports,
             'scraper_version': SCRAPER_VERSION,
             'search_terms': article_terms,
+            'locations': article_locations,
             'id': id_to_use
         }
         if updating:
