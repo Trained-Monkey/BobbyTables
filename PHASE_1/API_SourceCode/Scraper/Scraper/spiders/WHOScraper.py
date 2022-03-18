@@ -59,7 +59,6 @@ def convert_entity_list_to_json(response: language_v1.types.AnalyzeEntitiesRespo
     return ls
 
 
-
 def set_up_google_cloud_service_account():
     global gc_client
     obj = {
@@ -92,6 +91,12 @@ def set_up_nltk():
     nltk.downloader.download('averaged_perceptron_tagger')
 
 
+def get_new_article_id():
+    if db.articles.count_documents({'id': {'$exists': True}}, limit=1) == 0:
+        return 1
+    return db.articles.find_one({}, sort=[("id", pymongo.DESCENDING)])['id'] + 1
+
+
 class WHOScraper(CrawlSpider):
 
     def __init__(self):
@@ -115,18 +120,23 @@ class WHOScraper(CrawlSpider):
 
     rules = (
         Rule(LinkExtractor(allow=r'/item/'), callback='parse_article'),
-        Rule(LinkExtractor(allow=r'\d+'), follow=True), # TODO: Re-enable this once we have it works on one site
+        Rule(LinkExtractor(allow=r'\d+'), follow=True),  # TODO: Re-enable this once we have it works on one site
 
     )
 
     def parse_article(self, response):
         updating = False
+        id_to_use = get_new_article_id()
         if db.articles.count_documents({'url': response.url}, limit=1) != 0:
             # Check if the document we do already have has been parsed with the same SCRAPER_VERSION
-            exists = db.articles.count_documents({'url': response.url, 'scraper_version': SCRAPER_VERSION}, limit=1) == 1
+            exists = db.articles.count_documents({'url': response.url, 'scraper_version': SCRAPER_VERSION},
+                                                 limit=1) == 1
             if exists:
                 return
             else:
+                existing_article = db.articles.find_one({'url': response.url})
+                if 'id' in existing_article:
+                    id_to_use = existing_article['id']
                 updating = True
         article = response.xpath('//article')
         article_text = ""
@@ -145,12 +155,12 @@ class WHOScraper(CrawlSpider):
             'main_text': article_text,
             'reports': article_reports,
             'scraper_version': SCRAPER_VERSION,
+            'id': id_to_use
         }
         if updating:
             db.articles.update_one({'url': article_url}, output)
         else:
             db.articles.insert_one(output)
-
 
         # test = self.find_reports("Three people infected by what is thought to be H5N1 or H7N9  in Ho Chi Minh city.
         # First infection occurred on 1 Dec 2018, and latest is report on 10 December. Two in hospital,
@@ -281,7 +291,7 @@ class WHOScraper(CrawlSpider):
                 'debug': {
                 }
             }
-            
+
             if contains_date and contains_location and (contains_syndrome or contains_disease):
                 matches.append(report_dict)
 
@@ -351,7 +361,7 @@ def consolidate_matches(matches):
             for match in groups[f"group {group_number}"]:
                 distance_below = match['index'] - max_below
                 distance_above = min_above - match['index']
-                average_distance = (distance_above + distance_below)/2
+                average_distance = (distance_above + distance_below) / 2
                 if average_distance > max_distance:
                     max_distance = average_distance
                     max_distance_index = match['index']
@@ -361,4 +371,3 @@ def consolidate_matches(matches):
         if match['index'] in wanted_indexes:
             output.append(match)
     return output
-
