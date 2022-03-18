@@ -19,7 +19,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.0.2'
+SCRAPER_VERSION = '0.0.7'
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
@@ -147,7 +147,7 @@ class WHOScraper(CrawlSpider):
             'scraper_version': SCRAPER_VERSION,
         }
         if updating:
-            db.articles.update_one({'url': article_url}, output)
+            db.articles.update_one({'url': article_url}, {"$set": output})
         else:
             db.articles.insert_one(output)
 
@@ -190,7 +190,7 @@ class WHOScraper(CrawlSpider):
         # Find things we need to pay attention to:
         entity_locations = []
         for entity in entities:
-            if entity['type_'] == language_v1.types.Entity.Type.LOCATION:
+            if entity['type_'] == language_v1.types.Entity.Type.LOCATION and len(entity['metadata']) == 2:
                 entity_locations.append(entity['name'])
 
         text_words = text.split(' ')
@@ -262,13 +262,15 @@ class WHOScraper(CrawlSpider):
                         line = re.sub(r'"name": ', '', line)
                     elif line.startswith("\"states\": ") or line.startswith("\"cities\": "):
                         continue
-                    elif line.startswith("{") or line.startswith("}") or line.startswith("]"):
+                    elif line.startswith("{") or line.startswith("}") or line.startswith("[") or line.startswith("]"):
                         continue
-                    else:
+                    elif line.endswith(","):
                         line = line[1:-2]
+                    else:
+                        line = line[1:-1]
 
                     for location in locations:
-                        if line.startswith(location):
+                        if line.startswith(location + " "):
                             valid_locations.append(line)
             locations = valid_locations
 
