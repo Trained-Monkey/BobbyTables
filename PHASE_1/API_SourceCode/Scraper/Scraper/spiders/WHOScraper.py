@@ -32,8 +32,15 @@ SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthr
 WINDOW_THRESHOLD = 3
 
 load_dotenv()
-mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
-mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
+try:
+    mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
+    mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
+except TypeError:
+    with open(os.path.join(os.path.dirname(__file__), '../../secrets.json')) as f:
+        secrets = json.load(f)
+    mongodb_username = secrets['mongodb_username']
+    mongodb_password = secrets['mongodb_password']
+
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
       "@seng3011-bobby-tables.q2umd.mongodb.net/api?retryWrites=true&w=majority"
 
@@ -61,13 +68,26 @@ def convert_entity_list_to_json(response: language_v1.types.AnalyzeEntitiesRespo
 
 def set_up_google_cloud_service_account():
     global gc_client
+    try:
+        private_key_id = str(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY_ID'))
+        private_key = str(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY'))
+        client_email = str(os.getenv('GC_SERVICE_ACC_CLIENT_EMAIL'))
+        client_id = str(os.getenv('GC_SERVICE_ACC_CLIENT_ID'))
+    except TypeError:
+        with open(os.path.join(os.path.dirname(__file__), '../../secrets.json')) as f:
+            gc_secrets = json.load(f)
+        private_key_id = gc_secrets['private_key_id']
+        private_key = gc_secrets['private_key']
+        client_email = gc_secrets['client_email']
+        client_id = gc_secrets['client_id']
+
     obj = {
         "type": "service_account",
         "project_id": "seng3011-scraper",
-        "private_key_id": f"{str(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY_ID'))}",
-        "private_key": f"{format(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY'))}",
-        "client_email": f"{str(os.getenv('GC_SERVICE_ACC_CLIENT_EMAIL'))}",
-        "client_id": f"{str(os.getenv('GC_SERVICE_ACC_CLIENT_ID'))}",
+        "private_key_id": f"{private_key_id}",
+        "private_key": f"{private_key}",
+        "client_email": f"{client_email}",
+        "client_id": f"{client_id}",
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
