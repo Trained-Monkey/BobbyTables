@@ -1,6 +1,9 @@
 import pymongo
 from datetime import datetime
 from Type.Article import Article
+from Type.Report import Report
+from Type.Location import Location
+
 
 mongodb_username = 'bobby'  # TODO: fill these in manually
 mongodb_password = 'tables'
@@ -24,11 +27,33 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
     if len(location) > 0:
         query.update({'locations': {"$in": [location]}})
     cursor = db.articles.find(query).skip(offset).limit(limit)
-    output = []
+    articles = []
+    ids = []
     for dic in cursor:
-        print(dic)
-        obj = Article.parse_obj(dic)
-        print(obj)
-        output.append(obj)
+        reports = []
+        for report_dict in dic['reports']:
+            locations = []
+            for location_name in report_dict['locations']:
+                location = Location(
+                    country='',
+                    location=location_name
+                )
+                locations.append(location)
+            report = Report(
+                diseases=report_dict['diseases'],
+                syndromes=report_dict['syndromes'],
+                event_date=report_dict['event-date'],
+                locations=locations
+            )
+            reports.append(report)
+        article = Article(
+            url=dic['url'],
+            date_of_publication=dic['date_of_publication'].strftime("%Y-%m-%dT%H:%M:%S"),
+            headline=dic['headline'],
+            main_text=dic['main_text'],
+            reports=reports
+        )
+        articles.append(article)
+        ids.append(dic['id'])
     max_amount = db.articles.count_documents(query)
-    return output, max_amount
+    return articles, ids, max_amount

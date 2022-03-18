@@ -40,7 +40,10 @@ class Article(BaseModel):
             }
         }
 
+class ArticleIDPair(BaseModel):
+    article: Article
+    articleId: int
 
 class ArticleList(BaseModel):
-    articles: List[Article]
+    articles: List[ArticleIDPair]
     max_articles: int
