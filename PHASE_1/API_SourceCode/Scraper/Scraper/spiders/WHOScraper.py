@@ -147,7 +147,7 @@ class WHOScraper(CrawlSpider):
             'scraper_version': SCRAPER_VERSION,
         }
         if updating:
-            db.articles.update_one({'url': article_url}, output)
+            db.articles.update_one({'url': article_url}, {"$set": output})
         else:
             db.articles.insert_one(output)
 
