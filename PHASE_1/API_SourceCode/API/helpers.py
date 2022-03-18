@@ -1,8 +1,9 @@
 import pymongo
 from datetime import datetime
 from Type.Article import Article
-from Type.Report import Report
+from Type.Report import Report, ReportList
 from Type.Location import Location
+from fastapi import HTTPException
 
 
 mongodb_username = 'bobby'  # TODO: fill these in manually
@@ -30,22 +31,7 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
     articles = []
     ids = []
     for dic in cursor:
-        reports = []
-        for report_dict in dic['reports']:
-            locations = []
-            for location_name in report_dict['locations']:
-                location = Location(
-                    country='',
-                    location=location_name
-                )
-                locations.append(location)
-            report = Report(
-                diseases=report_dict['diseases'],
-                syndromes=report_dict['syndromes'],
-                event_date=report_dict['event-date'],
-                locations=locations
-            )
-            reports.append(report)
+        reports = process_reports(dic)
         article = Article(
             url=dic['url'],
             date_of_publication=dic['date_of_publication'].strftime("%Y-%m-%dT%H:%M:%S"),
@@ -57,3 +43,33 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
         ids.append(dic['id'])
     max_amount = db.articles.count_documents(query)
     return articles, ids, max_amount
+
+
+def process_reports(article):
+    reports = []
+    for report_dict in article['reports']:
+        locations = []
+        for location_name in report_dict['locations']:
+            location = Location(
+                country='',
+                location=location_name
+            )
+            locations.append(location)
+        report = Report(
+            diseases=report_dict['diseases'],
+            syndromes=report_dict['syndromes'],
+            event_date=report_dict['event-date'],
+            locations=locations
+        )
+        reports.append(report)
+    return reports
+
+
+def get_reports(article_id):
+    article = db.articles.find_one({'id': article_id})
+    if article is None:
+        raise HTTPException(status_code=404, detail="No article found with that given id")
+    reports = process_reports(article)
+    return reports
+
+

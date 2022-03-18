@@ -30,3 +30,6 @@ class Report(BaseModel):
                 ]
             }
         }
+
+class ReportList(BaseModel):
+    reports: list[Report]

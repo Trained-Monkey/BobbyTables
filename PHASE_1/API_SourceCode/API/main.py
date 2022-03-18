@@ -3,6 +3,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
 from Type.Article import Article, ArticleList, ArticleIDPair
+from Type.Report import Report, ReportList
 from Type.HTTP_Response import *
 
 import helpers
@@ -241,25 +242,26 @@ Parameters:
  * articleId: integer, required   - Article to get content section from
 
 Outputs:
- * report: [report]               - Reports found within the article
+ * reports: [report]               - Reports found within the article
 
 Example call: 
 GET /article/1/report
 
-Example resonse:
+Example response:
 {
-    "report": [<report object>]
+    "reports": [<report object>]
 }
 """
 responses = {
     404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/report", tags=["article"], responses=responses)
+@app.get("/article/{articleId}/reports", tags=["article"],  response_model=ReportList, responses=responses)
 async def articleReport(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Report route not implemented"}
+    reports = helpers.get_reports(articleId)
+    return {"reports": reports}
 
 
 @app.get("/healthcheck", status_code=status.HTTP_200_OK)
