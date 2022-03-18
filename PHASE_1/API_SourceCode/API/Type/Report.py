@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 from Type.Location import Location
 
+
 class Report(BaseModel):
     diseases: list[str]
-    syndromes: str
+    syndromes: list[str]
     event_date: str
     locations: list[Location]
 
@@ -13,12 +14,12 @@ class Report(BaseModel):
                 "event_date": "2020-01-03 xx:xx:xx to 2020-01-15",
                 "locations": [
                     {
-                    "country": "China",
-                    "location": "Wuhan, Hubei Province"
+                        "country": "China",
+                        "location": "Wuhan, Hubei Province"
                     },
                     {
-                    "country": "Japan",
-                    "location": ""
+                        "country": "Japan",
+                        "location": ""
                     }
                 ],
                 "diseases": [

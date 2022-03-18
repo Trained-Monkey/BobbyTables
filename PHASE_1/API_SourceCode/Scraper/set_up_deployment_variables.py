@@ -1,3 +1,4 @@
+import json
 import os
 import yaml
 
@@ -27,3 +28,15 @@ with open('scrapinghub.yml', 'r') as f:
 # update config to file
 with open('scrapinghub.yml', 'w') as f:
     yaml.dump(d, f, default_flow_style=False)
+
+# Create backup secrets.json
+secrets = {
+    'mongodb_username': os.environ.get('MONGODB_USER'),
+    'mongodb_password': os.environ.get('MONBODB_PASSWORD'),
+    'private_key_id':  os.environ.get('GC_SERVICE_ACC_PRIVATE_KEY_ID'),
+    'private_key': os.environ.get('GC_SERVICE_ACC_PRIVATE_KEY'),
+    'client_email': os.environ.get('GC_SERVICE_ACC_CLIENT_EMAIL'),
+    'client_id': os.environ.get('GC_SERVICE_ACC_CLIENT_ID'),
+}
+with open('secrets.json', 'w') as f:
+    json.dump(secrets, f)

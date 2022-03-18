@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
-from Type.Article import Article
+from Type.Article import Article, ArticleList, ArticleIDPair
 from Type.HTTP_Response import *
+
+import helpers
+from datetime import datetime
 
 tags_metadata = [
     {
@@ -47,20 +50,36 @@ Example response:
 }
 """
 responses = {
-    400: {"model": HTTP_400}, 
+    400: {"model": HTTP_400},
     500: {"model": HTTP_500}
 }
-@app.get("/article", tags=["article"], response_model=Article, responses=responses)
+@app.get("/article", tags=["article"], response_model=ArticleList, responses=responses)
 async def article(
-    end_date: str = Query(... ,example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
-    start_date: str = Query(...,example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"), 
+    end_date: str = Query(..., example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
+    start_date: str = Query(..., example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     key_terms: str = Query(..., example="zika"),
     location: str = Query(..., example="vietnam"),
-    limit: int = 20, 
+    limit: int = 20,
     offset: int = 0,
-    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-
-    return {"message" : "Article route not implemented"}
+    version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')): # TODO: Handle API version
+    end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    start_date_datetime = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    print(end_date_datetime)
+    print(start_date_datetime)
+    terms_list = key_terms.split(',')
+    articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
+    zipped = zip(articles, ids)
+    output = []
+    for result in zipped:
+        article_id_pair = ArticleIDPair(
+            article=result[0],
+            articleId=result[1]
+        )
+        output.append(article_id_pair)
+    return {
+        "articles": output,
+        "max_articles": max_articles
+    }
 
 """
 Gets the content section for a given article
@@ -83,7 +102,7 @@ Example response:
 }
 """
 responses = {
-    404: {"model": HTTP_404}, 
+    404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/content", tags=["article"], responses=responses)
@@ -113,7 +132,7 @@ Example response:
 }
 """
 responses = {
-    404: {"model": HTTP_404}, 
+    404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/response", tags=["article"], responses=responses)
@@ -143,7 +162,7 @@ Example response:
 }
 """
 responses = {
-    404: {"model": HTTP_404}, 
+    404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/assessment", tags=["article"], responses=responses)
@@ -173,7 +192,7 @@ Example response:
 }
 """
 responses = {
-    404: {"model": HTTP_404}, 
+    404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/source", tags=["article"], responses=responses)
@@ -203,7 +222,7 @@ Example resonse:
 }
 """
 responses = {
-    404: {"model": HTTP_404}, 
+    404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/advice", tags=["article"], responses=responses)
@@ -233,7 +252,7 @@ Example resonse:
 }
 """
 responses = {
-    404: {"model": HTTP_404}, 
+    404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/report", tags=["article"], responses=responses)
@@ -268,7 +287,7 @@ def perform_healthcheck():
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
-        
+
     openapi_schema = get_openapi(
         title="Pandemic API",
         version="1.0",

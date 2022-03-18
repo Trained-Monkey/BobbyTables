@@ -52,3 +52,4 @@ w3lib==1.22.0
 watchgod==0.7
 websockets==10.2
 zope.interface==5.4.0
+pymongo[srv]
