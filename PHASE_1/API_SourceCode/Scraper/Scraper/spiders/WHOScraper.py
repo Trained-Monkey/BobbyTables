@@ -19,7 +19,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.0.7'
+SCRAPER_VERSION = '0.0.9'
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
@@ -256,23 +256,28 @@ class WHOScraper(CrawlSpider):
             valid_locations = []
             counter = 0
             with open(os.path.join(os.path.dirname(__file__), '../../location_data.json'), encoding='utf-8') as f:
+                loc = ""
                 for line in f:
                     line = line.lstrip()
                     if line.startswith("\"name\": "):
-                        line = re.sub(r'"name": ', '', line)
+                        loc = line[9:-3]
                     elif line.startswith("\"states\": ") or line.startswith("\"cities\": "):
                         continue
                     elif line.startswith("{") or line.startswith("}") or line.startswith("[") or line.startswith("]"):
                         continue
                     elif line.endswith(","):
-                        line = line[1:-2]
+                        loc = line[1:-3]
                     else:
-                        line = line[1:-1]
+                        loc = line[1:-2]
 
                     for location in locations:
-                        if line.startswith(location + " "):
-                            valid_locations.append(line)
+                        if loc.lower() == location.lower():
+                            if location not in valid_locations:
+                                valid_locations.append(location)
+                            
             locations = valid_locations
+            if len(locations) == 0:
+                contains_location=False
 
             report_dict = {
                 'index': int(start_window_index + (WINDOW_SIZE / 2)),
