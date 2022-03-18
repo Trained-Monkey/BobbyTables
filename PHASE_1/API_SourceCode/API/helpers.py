@@ -2,8 +2,8 @@ import pymongo
 from datetime import datetime
 from Type.Article import Article
 
-mongodb_username = ''  # TODO: fill these in manually
-mongodb_password = ''
+mongodb_username = 'bobby'  # TODO: fill these in manually
+mongodb_password = 'tables'
 
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
       "@seng3011-bobby-tables.q2umd.mongodb.net/api?retryWrites=true&w=majority"
@@ -18,12 +18,15 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
     query = {
         'scraper_version': latest_scraper_version,
         'date_of_publication': {'$lte': end_date, '$gte': start_date},
-        'search_terms': {"$in": key_terms},
-        'locations': {"$in": [location]}
     }
+    if len(key_terms) > 0:
+        query.update({'search_terms': {"$in": key_terms}})
+    if len(location) > 0:
+        query.update({'locations': {"$in": [location]}})
     cursor = db.articles.find(query).skip(offset).limit(limit)
     output = []
     for dic in cursor:
+        print(dic)
         obj = Article.parse_obj(dic)
         print(obj)
         output.append(obj)
