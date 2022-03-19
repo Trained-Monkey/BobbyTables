@@ -154,7 +154,7 @@ class WHOScraper(CrawlSpider):
             article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split, "Citable reference": sub_split_article[1]}
         else:
             normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', split_article[9])
-            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: split_article[9]}
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split}
 
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
