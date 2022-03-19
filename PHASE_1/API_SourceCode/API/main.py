@@ -200,7 +200,8 @@ responses = {
 async def articleSource(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Source route not implemented"}
+    article_dict = helpers.get_article_dict(articleId)
+    return {"source": article_dict['url']}
 
 """
 Gets the advice section for a given article

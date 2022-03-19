@@ -5,7 +5,6 @@ from Type.Report import Report, ReportList
 from Type.Location import Location
 from fastapi import HTTPException
 
-
 mongodb_username = 'bobby'  # TODO: fill these in manually
 mongodb_password = 'tables'
 
@@ -66,15 +65,18 @@ def process_reports(article):
 
 
 def get_reports(article_id):
-    article = db.articles.find_one({'id': article_id})
-    if article is None:
-        raise HTTPException(status_code=404, detail="No article found with that given id")
+    article = get_article_dict(article_id)
     reports = process_reports(article)
     return reports
 
+
 def get_article_section(article_id, section_header):
+    article = get_article_dict(article_id)
+    return article['article_headers'][section_header]
+
+
+def get_article_dict(article_id):
     article = db.articles.find_one({'id': article_id})
     if article is None:
         raise HTTPException(status_code=404, detail="No article found with that given id")
-    return article['article_headers'][section_header]
-
+    return article
