@@ -138,25 +138,39 @@ class WHOScraper(CrawlSpider):
                 if 'id' in existing_article:
                     id_to_use = existing_article['id']
                 updating = True
+
+
+        article_html = ""
         article = response.xpath('//article')
-        article_text = ""
-        if article is not None:
-            for p in article.xpath(".//p/text() | .//li/text()"):
-                article_text += p.get()
+        for p in article.xpath(".//text()"):
+                article_html += p.get()
+
+        split_article = article_html.split("\n\n")
+
+        if "Citable reference" in split_article[9]:
+            sub_split_article = split_article[9].split("Citable reference:")
+            #sub_split_article[0]
+            normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', sub_split_article[0])
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split, "Citable reference": sub_split_article[1]}
+        else:
+            normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', split_article[9])
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: split_article[9]}
+
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
         date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
-        article_reports = self.find_reports(article_text)
+        article_reports = self.find_reports(article_html)
         article_locations = []
         for report in article_reports:
             article_locations += report['locations']
-        article_terms = self.find_search_terms(article_text)
+        article_terms = self.find_search_terms(article_html)
         output = {
             'url': article_url,
             'date_of_publication': date_object,
             'headline': article_headline,
-            'main_text': article_text,
+            'main_text': article_html,
+            'article_headers': article_headers,
             'reports': article_reports,
             'scraper_version': SCRAPER_VERSION,
             'search_terms': article_terms,
