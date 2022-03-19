@@ -94,12 +94,12 @@ def set_up_google_cloud_service_account():
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nat-lang-serv-acct%40seng3011-scraper.iam.gserviceaccount.com"
     }
-    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'), 'w') as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'resources', 'service_account.json'), 'w') as f:
         obj_str = json.dumps(obj)
         f.write(obj_str.replace('\\\\', '\\'))
     time.sleep(1)
     gc_client = language_v1.LanguageServiceClient.from_service_account_json(
-        os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'))
+        os.path.join(os.path.dirname(__file__), '..', 'resources', 'service_account.json'))
 
 
 def set_up_nltk():
@@ -212,10 +212,18 @@ class WHOScraper(CrawlSpider):
         text = split_text[0]
 
         # Test
-        with open(os.path.join(os.path.dirname(__file__), '../../syndrome_list.json')) as f:
-            syndrome_list = json.load(f)
-        with open(os.path.join(os.path.dirname(__file__), '../../diseases.json')) as f:
-            disease_list = json.load(f)
+        try:
+            with open(os.path.join(os.path.dirname(__file__), '../resources/syndrome_list.json')) as f:
+                syndrome_list = json.load(f)
+            with open(os.path.join(os.path.dirname(__file__), '../resources/diseases.json')) as f:
+                disease_list = json.load(f)
+        except:
+            syndrome_data = pkgutil.get_data("Scraper", "resources/syndrome_list.json")
+            syndrome_list = json.loads(syndrome_data.decode('utf-8'))
+
+            disease_data = pkgutil.get_data("Scraper", "resources/diseases.json")
+            disease_list = json.loads(disease_data.decode('utf-8'))
+
 
         #### LOCATION PARSING
         # Check if the text has already been parsed
