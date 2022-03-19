@@ -1,44 +1,31 @@
 import sys
 import os
 
-sys.path.insert(1, os.path.join(os.path.dirname(__file__), '..', '..', 'API_SourceCode'))
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), '..', '..', 'API_SourceCode', 'API'))
 
 from main import app
 from fastapi.testclient import TestClient
-
-"""
-TODO: Override db function in main.py with testing db function
-import pymongo
-
-mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
-mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
-
-uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
-      "@seng3011-bobby-tables.q2umd.mongodb.net/test?retryWrites=true&w=majority"
-client = pymongo.MongoClient(uri)
-db = client.test
-
-def get_db():
-    return db
-
-app.dependency_overrides[#GET_DB_FUNCTION] = get_db
-"""
+from helpers import set_db
+from test_helper import formulate_query_string, get_test_db
 
 client = TestClient(app)
+
+set_db(get_test_db())
 
 """
 Tests article assessment route with invalid articleId
 """
-def test_get_article_assessment():
-    response = client.get("/article/-1/assessment")
+def test_get_article_assessment_invalid_id():
+    response = client.get("/article/100/assessment")
     assert response.status_code == 404
-    assert response.json() == {"error_message": "No page found with given articleId"}
+    assert response.json()["detail"] == {"error_message": "No article found with that given id"}
 
 """
 Tests article assessment with id received from /article
 """
 def test_get_article_assessment():
-    response = client.get("/article")
+    query_string = formulate_query_string("Malawi", "2022-03-01T00:00:00", "2022-04-01T00:00:00", "outbreak")
+    response = client.get("/article" + query_string)
 
     # Getting article id from base /article route
     # Needs an article in the database
@@ -54,19 +41,22 @@ def test_get_article_assessment():
 Test article assessment with invalid version header
 """
 def test_assessment_invalid_header():
-    response = client.get("/article")
-    articleId = response.json()["articles"][0]["articleId"]
-    response = client.get("/article/" + str(articleId) + "/assessment", header={"version": "qwer"})
+    query_string = formulate_query_string("Malawi", "2022-03-01T00:00:00", "2022-04-01T00:00:00", "outbreak")
+    response = client.get("/article" + query_string)
 
-    assert response.status_code == 400
-    assert response.json() == {"error_message": "Bad request"}
+    articleId = response.json()["articles"][0]["articleId"]
+    response = client.get("/article/" + str(articleId) + "/assessment", headers={"version": "qwer"})
+
+    assert response.status_code == 422
 
 """
 Test article assessment with version header
 """
 def test_assessment_version_header():
-    response = client.get("/article")
+    query_string = formulate_query_string("Malawi", "2022-03-01T00:00:00", "2022-04-01T00:00:00", "outbreak")
+    response = client.get("/article" + query_string)
+
     articleId = response.json()["articles"][0]["articleId"]
-    response = client.get("/article/" + str(articleId) + "/assessment", header={"version": "v1.0"})
+    response = client.get("/article/" + str(articleId) + "/assessment", headers={"version": "v1.0"})
 
     assert response.status_code == 200

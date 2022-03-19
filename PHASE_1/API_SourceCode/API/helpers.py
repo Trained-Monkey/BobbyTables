@@ -5,8 +5,11 @@ from Type.Report import Report, ReportList
 from Type.Location import Location
 from fastapi import HTTPException
 
+import os
+
 mongodb_username = 'bobby'  # TODO: fill these in manually
 mongodb_password = 'tables'
+
 
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
       "@seng3011-bobby-tables.q2umd.mongodb.net/api?retryWrites=true&w=majority"
@@ -15,17 +18,23 @@ db = client.api
 
 latest_scraper_version = db.articles.find_one({}, sort=[("scraper_version", pymongo.DESCENDING)])['scraper_version']
 
+def set_db(new_db = None):
+    if new_db != None:
+        global db 
+        db = new_db
 
 def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, location: str, limit: int = 20,
                     offset: int = 0):
     query = {
-        'scraper_version': latest_scraper_version,
+        'scraper_version': '1.0.0',
         'date_of_publication': {'$lte': end_date, '$gte': start_date},
     }
     if len(key_terms) > 0:
         query.update({'search_terms': {"$in": key_terms}})
     if len(location) > 0:
         query.update({'locations': {"$in": [location]}})
+    print(query)
+
     cursor = db.articles.find(query).skip(offset).limit(limit)
     articles = []
     ids = []
@@ -78,5 +87,5 @@ def get_article_section(article_id, section_header):
 def get_article_dict(article_id):
     article = db.articles.find_one({'id': article_id})
     if article is None:
-        raise HTTPException(status_code=404, detail="No article found with that given id")
+        raise HTTPException(status_code=404, detail={"error_message": "No article found with that given id"})
     return article

@@ -1,10 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
+
+import sys
+
 from Type.Article import Article, ArticleList, ArticleIDPair
 from Type.Report import Report, ReportList
 from Type.HTTP_Response import *
+
+
 
 import helpers
 from datetime import datetime
@@ -63,10 +68,29 @@ async def article(
     limit: int = 20,
     offset: int = 0,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')): # TODO: Handle API version
-    end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
-    start_date_datetime = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
-    print(end_date_datetime)
-    print(start_date_datetime)
+    try:
+        end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    except:
+        raise HTTPException(status_code=400, detail={"error_message": "end_date must follow the format yyyy-MM-ddTHH:mm:ss"})
+    
+    try:
+        start_date_datetime = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    except:
+        raise HTTPException(status_code=400, detail={"error_message": "start_date must follow the format yyyy-MM-ddTHH:mm:ss"})
+
+    if (start_date_datetime > end_date_datetime):
+        raise HTTPException(status_code=400, detail={"error_message": "start_date must be before end_date"})
+
+    if (offset < 0):
+        raise HTTPException(status_code=400, detail={"error_message": "offset must be greater than 0"})
+
+    if (limit < 0):
+        raise HTTPException(status_code=400, detail={"error_message": "limit must be greater than 0"})
+
+
+    # Impose a maximum limit on the number of articles to return at once
+    limit = min(limit, 50)
+ 
     terms_list = key_terms.split(',')
     articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
     zipped = zip(articles, ids)
@@ -246,7 +270,7 @@ Outputs:
  * reports: [report]               - Reports found within the article
 
 Example call: 
-GET /article/1/report
+GET /article/1/reports
 
 Example response:
 {
