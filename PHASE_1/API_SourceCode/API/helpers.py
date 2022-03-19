@@ -72,4 +72,9 @@ def get_reports(article_id):
     reports = process_reports(article)
     return reports
 
+def get_article_section(article_id, section_header):
+    article = db.articles.find_one({'id': article_id})
+    if article is None:
+        raise HTTPException(status_code=404, detail="No article found with that given id")
+    return article['article_headers'][section_header]
 

@@ -110,7 +110,7 @@ responses = {
 async def articleContent(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Content route not implemented"}
+    return {"content": helpers.get_article_section(articleId, "Content")}
 
 """
 Gets the response section for a given article
@@ -140,7 +140,7 @@ responses = {
 async def articleResponse(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Response route not implemented"}
+    return {"response": helpers.get_article_section(articleId, "Public health response")}
 
 """
 Gets the assessment section for a given article
@@ -170,7 +170,7 @@ responses = {
 async def articleAssessment(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Assessment route not implemented"}
+    return {"assessment": helpers.get_article_section(articleId, "WHO risk assessment")}
 
 """
 Gets the source section for a given article
@@ -230,7 +230,7 @@ responses = {
 async def articleAdvice(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Advice route not implemented"}
+    return {"advice": helpers.get_article_section(articleId, "WHO advice")}
 
 """
 Gets the reports contained in a given article
