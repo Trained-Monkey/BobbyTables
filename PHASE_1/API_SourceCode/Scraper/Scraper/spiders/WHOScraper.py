@@ -185,6 +185,7 @@ class WHOScraper(CrawlSpider):
         article_locations = []
         for report in article_reports:
             article_locations += report['locations']
+        article_locations = list(set(article_locations))
         article_terms = self.find_search_terms(article_html)
         output = {
             'url': article_url,

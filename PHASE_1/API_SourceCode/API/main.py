@@ -1,9 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
+
+import sys
+
 from Type.Article import Article, ArticleList, ArticleIDPair
+from Type.Report import Report, ReportList
 from Type.HTTP_Response import *
+
+
 
 import helpers
 from datetime import datetime
@@ -62,10 +68,29 @@ async def article(
     limit: int = 20,
     offset: int = 0,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')): # TODO: Handle API version
-    end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
-    start_date_datetime = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
-    print(end_date_datetime)
-    print(start_date_datetime)
+    try:
+        end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    except:
+        raise HTTPException(status_code=400, detail={"error_message": "end_date must follow the format yyyy-MM-ddTHH:mm:ss"})
+    
+    try:
+        start_date_datetime = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    except:
+        raise HTTPException(status_code=400, detail={"error_message": "start_date must follow the format yyyy-MM-ddTHH:mm:ss"})
+
+    if (start_date_datetime > end_date_datetime):
+        raise HTTPException(status_code=400, detail={"error_message": "start_date must be before end_date"})
+
+    if (offset < 0):
+        raise HTTPException(status_code=400, detail={"error_message": "offset must be greater than 0"})
+
+    if (limit < 0):
+        raise HTTPException(status_code=400, detail={"error_message": "limit must be greater than 0"})
+
+
+    # Impose a maximum limit on the number of articles to return at once
+    limit = min(limit, 50)
+ 
     terms_list = key_terms.split(',')
     articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
     zipped = zip(articles, ids)
@@ -109,7 +134,7 @@ responses = {
 async def articleContent(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Content route not implemented"}
+    return {"content": helpers.get_article_section(articleId, "Content")}
 
 """
 Gets the response section for a given article
@@ -139,7 +164,7 @@ responses = {
 async def articleResponse(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Response route not implemented"}
+    return {"response": helpers.get_article_section(articleId, "Public health response")}
 
 """
 Gets the assessment section for a given article
@@ -169,7 +194,7 @@ responses = {
 async def articleAssessment(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Assessment route not implemented"}
+    return {"assessment": helpers.get_article_section(articleId, "WHO risk assessment")}
 
 """
 Gets the source section for a given article
@@ -199,7 +224,8 @@ responses = {
 async def articleSource(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Source route not implemented"}
+    article_dict = helpers.get_article_dict(articleId)
+    return {"source": article_dict['url']}
 
 """
 Gets the advice section for a given article
@@ -229,7 +255,7 @@ responses = {
 async def articleAdvice(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Advice route not implemented"}
+    return {"advice": helpers.get_article_section(articleId, "WHO advice")}
 
 """
 Gets the reports contained in a given article
@@ -241,25 +267,26 @@ Parameters:
  * articleId: integer, required   - Article to get content section from
 
 Outputs:
- * report: [report]               - Reports found within the article
+ * reports: [report]               - Reports found within the article
 
 Example call: 
-GET /article/1/report
+GET /article/1/reports
 
-Example resonse:
+Example response:
 {
-    "report": [<report object>]
+    "reports": [<report object>]
 }
 """
 responses = {
     404: {"model": HTTP_404},
     500: {"model": HTTP_500}
 }
-@app.get("/article/{articleId}/report", tags=["article"], responses=responses)
+@app.get("/article/{articleId}/reports", tags=["article"],  response_model=ReportList, responses=responses)
 async def articleReport(
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
-    return {"message" : "Report route not implemented"}
+    reports = helpers.get_reports(articleId)
+    return {"reports": reports}
 
 
 @app.get("/healthcheck", status_code=status.HTTP_200_OK)
