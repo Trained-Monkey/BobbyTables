@@ -94,12 +94,12 @@ def set_up_google_cloud_service_account():
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nat-lang-serv-acct%40seng3011-scraper.iam.gserviceaccount.com"
     }
-    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'), 'w') as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'resources', 'service_account.json'), 'w') as f:
         obj_str = json.dumps(obj)
         f.write(obj_str.replace('\\\\', '\\'))
     time.sleep(1)
     gc_client = language_v1.LanguageServiceClient.from_service_account_json(
-        os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'))
+        os.path.join(os.path.dirname(__file__), '..', 'resources', 'service_account.json'))
 
 
 def set_up_nltk():
@@ -159,25 +159,39 @@ class WHOScraper(CrawlSpider):
                 if 'id' in existing_article:
                     id_to_use = existing_article['id']
                 updating = True
+
+
+        article_html = ""
         article = response.xpath('//article')
-        article_text = ""
-        if article is not None:
-            for p in article.xpath(".//p/text() | .//li/text()"):
-                article_text += p.get()
+        for p in article.xpath(".//text()"):
+                article_html += p.get()
+
+        split_article = article_html.split("\n\n")
+
+        if "Citable reference" in split_article[9]:
+            sub_split_article = split_article[9].split("Citable reference:")
+            #sub_split_article[0]
+            normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', sub_split_article[0])
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split, "Citable reference": sub_split_article[1]}
+        else:
+            normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', split_article[9])
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split}
+
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
         date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
-        article_reports = self.find_reports(article_text)
+        article_reports = self.find_reports(article_html)
         article_locations = []
         for report in article_reports:
             article_locations += report['locations']
-        article_terms = self.find_search_terms(article_text)
+        article_terms = self.find_search_terms(article_html)
         output = {
             'url': article_url,
             'date_of_publication': date_object,
             'headline': article_headline,
-            'main_text': article_text,
+            'main_text': article_html,
+            'article_headers': article_headers,
             'reports': article_reports,
             'scraper_version': SCRAPER_VERSION,
             'search_terms': article_terms,
@@ -212,10 +226,18 @@ class WHOScraper(CrawlSpider):
         text = split_text[0]
 
         # Test
-        with open(os.path.join(os.path.dirname(__file__), '../../syndrome_list.json')) as f:
-            syndrome_list = json.load(f)
-        with open(os.path.join(os.path.dirname(__file__), '../../diseases.json')) as f:
-            disease_list = json.load(f)
+        try:
+            with open(os.path.join(os.path.dirname(__file__), '../resources/syndrome_list.json')) as f:
+                syndrome_list = json.load(f)
+            with open(os.path.join(os.path.dirname(__file__), '../resources/diseases.json')) as f:
+                disease_list = json.load(f)
+        except:
+            syndrome_data = pkgutil.get_data("Scraper", "resources/syndrome_list.json")
+            syndrome_list = json.loads(syndrome_data.decode('utf-8'))
+
+            disease_data = pkgutil.get_data("Scraper", "resources/diseases.json")
+            disease_list = json.loads(disease_data.decode('utf-8'))
+
 
         #### LOCATION PARSING
         # Check if the text has already been parsed
