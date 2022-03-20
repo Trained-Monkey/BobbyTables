@@ -4,7 +4,7 @@ from typing import List
 
 
 class Report(BaseModel):
-    diseases: : List[str]
+    diseases: List[str]
     syndromes: List[str]
     event_date: str
     locations: List[Location]
