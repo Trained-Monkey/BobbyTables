@@ -1,8 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
 
+import logging
+
+import traceback
 import sys
 
 from Type.Article import Article, ArticleList, ArticleIDPair
@@ -10,8 +13,11 @@ from Type.Report import Report, ReportList
 from Type.HTTP_Response import *
 from fastapi.staticfiles import StaticFiles
 
+import traceback
+
 
 import helpers
+from helpers import start_logging
 from datetime import datetime
 
 tags_metadata = [
@@ -22,7 +28,6 @@ tags_metadata = [
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
-
 
 """
 Routes set up according to stoplight documentation
@@ -61,7 +66,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article", tags=["Article"], response_model=ArticleList, responses=responses, response_model_exclude_unset=True)
+@start_logging
 async def article(
+    request: Request,
     end_date: str = Query(..., example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     start_date: str = Query(..., example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     key_terms: str = Query(..., example="outbreak"),
@@ -72,6 +79,7 @@ async def article(
     """
     Gets a list of articles corresponding to the given input parameters
     """
+
     try:
         end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
     except:
@@ -94,7 +102,7 @@ async def article(
 
     # Impose a maximum limit on the number of articles to return at once
     limit = min(limit, 50)
- 
+
     terms_list = key_terms.split(',')
     articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
     zipped = zip(articles, ids)
@@ -109,6 +117,7 @@ async def article(
         "articles": output,
         "max_articles": max_articles
     }
+    
 
 """
 Gets the content section for a given article
@@ -135,7 +144,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/content", tags=["Article"], responses=responses)
+@start_logging
 async def article_content(
+    request : Request,
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     """
@@ -168,7 +179,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/response", tags=["Article"], responses=responses)
+@start_logging
 async def article_response(
+    request : Request,
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     """
@@ -201,7 +214,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/assessment", tags=["Article"], responses=responses)
+@start_logging
 async def article_assessment(
+    request : Request,
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     """
@@ -234,7 +249,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/source", tags=["Article"], responses=responses)
+@start_logging
 async def article_source(
+    request : Request,
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     """
@@ -268,7 +285,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/advice", tags=["Article"], responses=responses)
+@start_logging
 async def article_advice(
+    request : Request,
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     """
@@ -301,7 +320,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article/{articleId}/reports", tags=["Article"],  response_model=ReportList, responses=responses)
+@start_logging
 async def article_report(
+    request : Request,
     articleId: int,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')):
     """
@@ -312,7 +333,8 @@ async def article_report(
 
 
 @app.get("/healthcheck", status_code=status.HTTP_200_OK)
-def perform_healthcheck():
+@start_logging
+def perform_healthcheck(request : Request):
     """
         Simple route for the GitHub Actions to healthcheck on.
 
@@ -334,7 +356,6 @@ def perform_healthcheck():
     return {'healthcheck': 'Everything OK!'}
 
 def custom_openapi():
-
     if app.openapi_schema:
         return app.openapi_schema
 
@@ -350,7 +371,6 @@ def custom_openapi():
     openapi_schema["paths"]["/article/{articleId}/assessment"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"assessment" : "string"}
     openapi_schema["paths"]["/article/{articleId}/source"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"source" : "string"}
     openapi_schema["paths"]["/article/{articleId}/advice"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"advice" : "string"}
-
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
