@@ -24,8 +24,8 @@ def formulate_query_string(location, start_date, end_date, keyterms):
 Gets the testing database to return
 """
 def get_test_db():
-    mongodb_username = ''
-    mongodb_password = ''
+    mongodb_username = 'bobbytest'
+    mongodb_password = 'tablestest'
 
     uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
         "@seng3011-bobby-tables.q2umd.mongodb.net/test?retryWrites=true&w=majority"
