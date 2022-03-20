@@ -20,7 +20,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.0.10'
+SCRAPER_VERSION = '0.0.11'
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
@@ -184,8 +184,8 @@ class WHOScraper(CrawlSpider):
         article_reports = self.find_reports(article_html)
         article_locations = []
         for report in article_reports:
-            article_locations += report['locations']
-        article_locations = list(set(article_locations))
+            if report['locations'] not in article_locations:
+                article_locations += report['locations']
         article_terms = self.find_search_terms(article_html)
         output = {
             'url': article_url,
