@@ -5,18 +5,7 @@ import pymongo
 Formulates a query string with parameters for /article route
 """
 def formulate_query_string(location, start_date, end_date, keyterms):
-    result = "?"
-    
-    result += "end_date="
-    result += quote_plus(end_date)
-    result += "&start_date="
-    result += quote_plus(start_date)
-    
-    result += "&key_terms="
-    result += quote_plus(keyterms)
-    result += "&location="
-    result += quote_plus(location)
-    return result
+    return f"?end_date={quote_plus(end_date)}&start_date={quote_plus(start_date)}&key_terms={quote_plus(keyterms)}&location={quote_plus(location)}"
 
 
 
