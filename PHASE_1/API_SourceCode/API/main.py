@@ -1,7 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
+
+from functools import wraps
+
+import logging
 
 import sys
 
@@ -10,6 +14,9 @@ from Type.Report import Report, ReportList
 from Type.HTTP_Response import *
 from fastapi.staticfiles import StaticFiles
 
+import traceback
+
+logging.basicConfig(filename='example.log', level=logging.ERROR, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 import helpers
 from datetime import datetime
@@ -22,6 +29,24 @@ tags_metadata = [
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
+
+def start_logging(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as err:
+            if (type(err) is HTTPException):
+                logging.error(f"Encountered HTTPExcetpion, status_code={err.status_code}, details={err.detail}")
+            else:
+                logging.error(f"Encountered {(type(err).__name__)}")
+            logging.error(func)
+            logging.error("The parameters that triggered this error")
+            logging.error(kwargs)
+
+            raise err
+
+    return wrapper
 
 
 """
@@ -61,7 +86,9 @@ responses = {
     500: {"model": HTTP_500}
 }
 @app.get("/article", tags=["Article"], response_model=ArticleList, responses=responses, response_model_exclude_unset=True)
+@start_logging
 async def article(
+    request: Request,
     end_date: str = Query(..., example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     start_date: str = Query(..., example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     key_terms: str = Query(..., example="outbreak"),
@@ -72,6 +99,7 @@ async def article(
     """
     Gets a list of articles corresponding to the given input parameters
     """
+
     try:
         end_date_datetime = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
     except:
@@ -94,7 +122,7 @@ async def article(
 
     # Impose a maximum limit on the number of articles to return at once
     limit = min(limit, 50)
- 
+
     terms_list = key_terms.split(',')
     articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
     zipped = zip(articles, ids)
@@ -109,6 +137,7 @@ async def article(
         "articles": output,
         "max_articles": max_articles
     }
+    
 
 """
 Gets the content section for a given article
