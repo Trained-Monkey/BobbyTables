@@ -1,0 +1,7 @@
+scrapy
+datefinder
+geograpy3
+tqdm
+pymongo[srv]
+python-dotenv
+google-cloud-language
