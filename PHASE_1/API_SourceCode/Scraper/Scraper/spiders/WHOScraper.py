@@ -7,6 +7,7 @@ import re
 import time
 import datetime
 from urllib.parse import quote_plus
+import pkgutil
 
 from dotenv import load_dotenv
 import pymongo
@@ -19,7 +20,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.0.1'
+SCRAPER_VERSION = '0.0.10'
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
@@ -32,8 +33,15 @@ SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthr
 WINDOW_THRESHOLD = 3
 
 load_dotenv()
-mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
-mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
+try:
+    mongodb_username = quote_plus(os.getenv('MONGODB_USER'))
+    mongodb_password = quote_plus(os.getenv('MONBODB_PASSWORD'))
+except TypeError:
+    data = pkgutil.get_data("Scraper", "resources/secrets.json")
+    secrets = json.loads(data.decode('utf-8'))
+    mongodb_username = secrets['mongodb_username']
+    mongodb_password = secrets['mongodb_password']
+
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
       "@seng3011-bobby-tables.q2umd.mongodb.net/api?retryWrites=true&w=majority"
 
@@ -59,27 +67,39 @@ def convert_entity_list_to_json(response: language_v1.types.AnalyzeEntitiesRespo
     return ls
 
 
-
 def set_up_google_cloud_service_account():
     global gc_client
+    try:
+        private_key_id = str(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY_ID'))
+        private_key = str(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY'))
+        client_email = str(os.getenv('GC_SERVICE_ACC_CLIENT_EMAIL'))
+        client_id = str(os.getenv('GC_SERVICE_ACC_CLIENT_ID'))
+    except TypeError:
+        gc_data = pkgutil.get_data("Scraper", "resources/secrets.json")
+        gc_secrets = json.loads(gc_data.decode('utf-8'))
+        private_key_id = gc_secrets['private_key_id']
+        private_key = gc_secrets['private_key']
+        client_email = gc_secrets['client_email']
+        client_id = gc_secrets['client_id']
+
     obj = {
         "type": "service_account",
         "project_id": "seng3011-scraper",
-        "private_key_id": f"{str(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY_ID'))}",
-        "private_key": f"{format(os.getenv('GC_SERVICE_ACC_PRIVATE_KEY'))}",
-        "client_email": f"{str(os.getenv('GC_SERVICE_ACC_CLIENT_EMAIL'))}",
-        "client_id": f"{str(os.getenv('GC_SERVICE_ACC_CLIENT_ID'))}",
+        "private_key_id": f"{private_key_id}",
+        "private_key": f"{private_key}",
+        "client_email": f"{client_email}",
+        "client_id": f"{client_id}",
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nat-lang-serv-acct%40seng3011-scraper.iam.gserviceaccount.com"
     }
-    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'), 'w') as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'resources', 'service_account.json'), 'w') as f:
         obj_str = json.dumps(obj)
         f.write(obj_str.replace('\\\\', '\\'))
     time.sleep(1)
     gc_client = language_v1.LanguageServiceClient.from_service_account_json(
-        os.path.join(os.path.dirname(__file__), '..', '..', 'service_account.json'))
+        os.path.join(os.path.dirname(__file__), '..', 'resources', 'service_account.json'))
 
 
 def set_up_nltk():
@@ -90,6 +110,12 @@ def set_up_nltk():
     nltk.downloader.download('punkt')
     # since 2020-09
     nltk.downloader.download('averaged_perceptron_tagger')
+
+
+def get_new_article_id():
+    if db.articles.count_documents({'id': {'$exists': True}}, limit=1) == 0:
+        return 1
+    return db.articles.find_one({}, sort=[("id", pymongo.DESCENDING)])['id'] + 1
 
 
 class WHOScraper(CrawlSpider):
@@ -115,46 +141,81 @@ class WHOScraper(CrawlSpider):
 
     rules = (
         Rule(LinkExtractor(allow=r'/item/'), callback='parse_article'),
-        Rule(LinkExtractor(allow=r'\d+'), follow=True), # TODO: Re-enable this once we have it works on one site
+        Rule(LinkExtractor(allow=r'\d+'), follow=True),  # TODO: Re-enable this once we have it works on one site
 
     )
 
     def parse_article(self, response):
         updating = False
+        id_to_use = get_new_article_id()
         if db.articles.count_documents({'url': response.url}, limit=1) != 0:
             # Check if the document we do already have has been parsed with the same SCRAPER_VERSION
-            exists = db.articles.count_documents({'url': response.url, 'scraper_version': SCRAPER_VERSION}, limit=1) == 1
+            exists = db.articles.count_documents({'url': response.url, 'scraper_version': SCRAPER_VERSION},
+                                                 limit=1) == 1
             if exists:
                 return
             else:
+                existing_article = db.articles.find_one({'url': response.url})
+                if 'id' in existing_article:
+                    id_to_use = existing_article['id']
                 updating = True
+
+
+        article_html = ""
         article = response.xpath('//article')
-        article_text = ""
-        if article is not None:
-            for p in article.xpath(".//p/text() | .//li/text()"):
-                article_text += p.get()
+        for p in article.xpath(".//text()"):
+                article_html += p.get()
+
+        split_article = article_html.split("\n\n")
+
+        if "Citable reference" in split_article[9]:
+            sub_split_article = split_article[9].split("Citable reference:")
+            #sub_split_article[0]
+            normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', sub_split_article[0])
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split, "Citable reference": sub_split_article[1]}
+        else:
+            normalised_split = re.sub(r'([a-z]{1})([A-Z]{1})', r'\1\n\2', split_article[9])
+            article_headers = {"Content": split_article[1], split_article[2]: split_article[3], split_article[4]: split_article[5], split_article[6]: split_article[7], split_article[8]: normalised_split}
+
         article_url = response.url
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
-        date_object = datetime.strptime(article_date, "%d %B %Y")
+        date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
-        article_reports = self.find_reports(article_text)
+        article_reports = self.find_reports(article_html)
+        article_locations = []
+        for report in article_reports:
+            article_locations += report['locations']
+        article_locations = list(set(article_locations))
+        article_terms = self.find_search_terms(article_html)
         output = {
             'url': article_url,
             'date_of_publication': date_object,
             'headline': article_headline,
-            'main_text': article_text,
+            'main_text': article_html,
+            'article_headers': article_headers,
             'reports': article_reports,
             'scraper_version': SCRAPER_VERSION,
+            'search_terms': article_terms,
+            'locations': article_locations,
+            'id': id_to_use
         }
         if updating:
-            db.articles.update_one({'url': article_url}, output)
+            db.articles.update_one({'url': article_url}, {"$set": output})
         else:
             db.articles.insert_one(output)
-
 
         # test = self.find_reports("Three people infected by what is thought to be H5N1 or H7N9  in Ho Chi Minh city.
         # First infection occurred on 1 Dec 2018, and latest is report on 10 December. Two in hospital,
         # one has recovered. Furthermore, two people with fever and rash infected by an unknown disease.")
+
+    def find_search_terms(self, text):
+        matches = []
+        terms = GENERAL_TERMS + SPECIFIC_TERMS
+        for term in terms:
+            if term.lower() in text.lower():
+                matches.append(term)
+        return matches
+
 
     # WIP
     # This is a basic implementation, though words we are looking for need to be improved so we can successfully detect
@@ -166,10 +227,18 @@ class WHOScraper(CrawlSpider):
         text = split_text[0]
 
         # Test
-        with open(os.path.join(os.path.dirname(__file__), '../../syndrome_list.json')) as f:
-            syndrome_list = json.load(f)
-        with open(os.path.join(os.path.dirname(__file__), '../../diseases.json')) as f:
-            disease_list = json.load(f)
+        try:
+            with open(os.path.join(os.path.dirname(__file__), '../resources/syndrome_list.json')) as f:
+                syndrome_list = json.load(f)
+            with open(os.path.join(os.path.dirname(__file__), '../resources/diseases.json')) as f:
+                disease_list = json.load(f)
+        except:
+            syndrome_data = pkgutil.get_data("Scraper", "resources/syndrome_list.json")
+            syndrome_list = json.loads(syndrome_data.decode('utf-8'))
+
+            disease_data = pkgutil.get_data("Scraper", "resources/diseases.json")
+            disease_list = json.loads(disease_data.decode('utf-8'))
+
 
         #### LOCATION PARSING
         # Check if the text has already been parsed
@@ -190,7 +259,7 @@ class WHOScraper(CrawlSpider):
         # Find things we need to pay attention to:
         entity_locations = []
         for entity in entities:
-            if entity['type_'] == language_v1.types.Entity.Type.LOCATION:
+            if entity['type_'] == language_v1.types.Entity.Type.LOCATION and len(entity['metadata']) == 2:
                 entity_locations.append(entity['name'])
 
         text_words = text.split(' ')
@@ -256,21 +325,28 @@ class WHOScraper(CrawlSpider):
             valid_locations = []
             counter = 0
             with open(os.path.join(os.path.dirname(__file__), '../../location_data.json'), encoding='utf-8') as f:
+                loc = ""
                 for line in f:
                     line = line.lstrip()
                     if line.startswith("\"name\": "):
-                        line = re.sub(r'"name": ', '', line)
+                        loc = line[9:-3]
                     elif line.startswith("\"states\": ") or line.startswith("\"cities\": "):
                         continue
-                    elif line.startswith("{") or line.startswith("}") or line.startswith("]"):
+                    elif line.startswith("{") or line.startswith("}") or line.startswith("[") or line.startswith("]"):
                         continue
+                    elif line.endswith(","):
+                        loc = line[1:-3]
                     else:
-                        line = line[1:-2]
+                        loc = line[1:-2]
 
                     for location in locations:
-                        if line.startswith(location):
-                            valid_locations.append(line)
+                        if loc.lower() == location.lower():
+                            if location not in valid_locations:
+                                valid_locations.append(location)
+                            
             locations = valid_locations
+            if len(locations) == 0:
+                contains_location=False
 
             report_dict = {
                 'index': int(start_window_index + (WINDOW_SIZE / 2)),
@@ -281,7 +357,7 @@ class WHOScraper(CrawlSpider):
                 'debug': {
                 }
             }
-            
+
             if contains_date and contains_location and (contains_syndrome or contains_disease):
                 matches.append(report_dict)
 
@@ -351,7 +427,7 @@ def consolidate_matches(matches):
             for match in groups[f"group {group_number}"]:
                 distance_below = match['index'] - max_below
                 distance_above = min_above - match['index']
-                average_distance = (distance_above + distance_below)/2
+                average_distance = (distance_above + distance_below) / 2
                 if average_distance > max_distance:
                     max_distance = average_distance
                     max_distance_index = match['index']
@@ -361,4 +437,3 @@ def consolidate_matches(matches):
         if match['index'] in wanted_indexes:
             output.append(match)
     return output
-
