@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 from Type.Location import Location
+from typing import List
 
 
 class Report(BaseModel):
-    diseases: list[str]
-    syndromes: list[str]
+    diseases: : List[str]
+    syndromes: List[str]
     event_date: str
-    locations: list[Location]
+    locations: List[Location]
 
     class Config:
         schema_extra = {
@@ -33,4 +34,4 @@ class Report(BaseModel):
 
 
 class ReportList(BaseModel):
-    reports: list[Report]
+    reports: List[Report]
