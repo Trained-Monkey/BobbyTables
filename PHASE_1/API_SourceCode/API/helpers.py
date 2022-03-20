@@ -19,14 +19,17 @@ db = client.api
 latest_scraper_version = db.articles.find_one({}, sort=[("scraper_version", pymongo.DESCENDING)])['scraper_version']
 
 def set_db(new_db = None):
+    
     if new_db != None:
         global db 
+        global latest_scraper_version
+        latest_scraper_version = "0.0.9"
         db = new_db
 
 def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, location: str, limit: int = 20,
                     offset: int = 0):
     query = {
-        'scraper_version': '1.0.0',
+        'scraper_version': latest_scraper_version,
         'date_of_publication': {'$lte': end_date, '$gte': start_date},
     }
     if len(key_terms) > 0:
