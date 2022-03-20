@@ -11,8 +11,8 @@ import traceback
 
 import os
 
-mongodb_username = ''  # TODO: fill these in manually
-mongodb_password = ''
+mongodb_username = 'bobby'  # TODO: fill these in manually
+mongodb_password = 'tables'
 
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
       "@seng3011-bobby-tables.q2umd.mongodb.net/api?retryWrites=true&w=majority"
