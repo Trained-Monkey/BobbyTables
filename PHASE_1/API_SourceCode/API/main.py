@@ -333,8 +333,8 @@ async def article_report(
 
 
 @app.get("/healthcheck", status_code=status.HTTP_200_OK)
-@start_logging
-def perform_healthcheck(request : Request):
+# @start_logging
+def perform_healthcheck():
     """
         Simple route for the GitHub Actions to healthcheck on.
 
