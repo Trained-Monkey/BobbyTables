@@ -7,8 +7,8 @@ from fastapi import HTTPException
 
 import os
 
-mongodb_username = ''  # TODO: fill these in manually
-mongodb_password = ''
+mongodb_username = 'bobby'  # TODO: fill these in manually
+mongodb_password = 'tables'
 
 
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
