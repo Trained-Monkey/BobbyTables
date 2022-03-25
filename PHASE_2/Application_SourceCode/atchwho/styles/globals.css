@@ -1,9 +1,21 @@
 html,
 body {
-  padding: 0;
-  margin: 0;
+  padding: 0px;
+  margin-left: -16px;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    width: 100vw;
+    height: 100vh;
+    background-color: #252323;
+    overflow: hidden;
+}
+
+.example::-webkit-scrollbar {
+  display: none;
+}
+
+.data-new-gr-c-s-check-loaded {
+  margin-left: -8px;
 }
 
 a {
@@ -11,6 +23,16 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
+*{
+  -ms-overflow-style: hidden;
+  overflow: hidden;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.leaflet-container {
+  overflow: hidden;
+  height: 400px;
+  }
