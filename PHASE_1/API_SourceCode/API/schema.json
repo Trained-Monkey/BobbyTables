@@ -22,7 +22,7 @@
                             "type": "string",
                             "format": "yyyy-MM-ddTHH:mm:ss"
                         },
-                        "example": "2022-01-01T00:00:00",
+                        "example": "2030-01-01T00:00:00",
                         "name": "end_date",
                         "in": "query"
                     },
@@ -33,7 +33,7 @@
                             "type": "string",
                             "format": "yyyy-MM-ddTHH:mm:ss"
                         },
-                        "example": "2021-01-01T00:00:00",
+                        "example": "2020-01-01T00:00:00",
                         "name": "start_date",
                         "in": "query"
                     },
@@ -53,7 +53,7 @@
                             "title": "Location",
                             "type": "string"
                         },
-                        "example": "vietnam",
+                        "example": "Malawi",
                         "name": "location",
                         "in": "query"
                     },

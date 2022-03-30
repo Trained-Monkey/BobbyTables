@@ -80,10 +80,10 @@ responses = {
 @start_logging
 async def article(
     request: Request,
-    end_date: str = Query(..., example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
-    start_date: str = Query(..., example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
+    end_date: str = Query(..., example="2030-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
+    start_date: str = Query(..., example="2020-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     key_terms: str = Query(..., example="outbreak"),
-    location: str = Query(..., example="vietnam"),
+    location: str = Query(..., example="Malawi"),
     limit: int = 20,
     offset: int = 0,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')): # TODO: Handle API version
