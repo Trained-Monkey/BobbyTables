@@ -4,12 +4,15 @@ from Type.Article import Article
 from Type.Report import Report, ReportList
 from Type.Location import Location
 from fastapi import HTTPException
+from functools import wraps
+import logging
+import sys
+import traceback
 
 import os
 
-mongodb_username = ''  # TODO: fill these in manually
-mongodb_password = ''
-
+mongodb_username = 'bobby'  # TODO: fill these in manually
+mongodb_password = 'tables'
 
 uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}" + \
       "@seng3011-bobby-tables.q2umd.mongodb.net/api?retryWrites=true&w=majority"
@@ -92,3 +95,27 @@ def get_article_dict(article_id):
     if article is None:
         raise HTTPException(status_code=404, detail={"error_message": "No article found with that given id"})
     return article
+
+logging.basicConfig(filename='result.log', level=logging.ERROR, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
+def start_logging(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as err:
+            err_type, err_func, err_tb = sys.exc_info()
+
+            logging.error(err_func)
+            
+            logging.error(''.join(traceback.format_tb(err_tb)))
+            method = kwargs["request"].method
+            url = kwargs["request"].url
+            logging.error(method)
+            logging.error(url)
+            logging.error("The parameters that triggered this error")
+            logging.error(kwargs)
+            
+            raise err
+
+    return wrapper

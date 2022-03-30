@@ -7,7 +7,7 @@ class HTTP_400(HTTP_Error):
     class Config:
         schema_extra = {
             'example': {
-                'error_message': 'Bad request'
+                'detail' : { 'error_message': 'Bad request ' }
             }
         }
 
@@ -15,7 +15,7 @@ class HTTP_404(HTTP_Error):
     class Config:
         schema_extra = {
             'example': {
-                'error_message': 'No article found with that given id'
+                'detail' : { 'error_message': 'No article found with that given id' }
             }
         }
 
@@ -23,6 +23,6 @@ class HTTP_500(HTTP_Error):
     class Config:
         schema_extra = {
             'example': {
-                'error_message': 'Internal server error'
+                'detail' : { 'error_message': 'Internal server error' }
             }
         }
