@@ -2,6 +2,11 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+# from fastapi import exception_handler
+import json
 
 import logging
 
@@ -29,6 +34,12 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata)
 
+@app.exception_handler(RequestValidationError)
+async def missing_parameters(request, exception):
+    return JSONResponse({
+        "error_message": "Bad request"
+    }, status_code = 400)
+    
 """
 Routes set up according to stoplight documentation
 link: https://bobbytables.stoplight.io/docs/pandemic-api/YXBpOjQzMjI3NTU4-pandemic-api
@@ -69,10 +80,10 @@ responses = {
 @start_logging
 async def article(
     request: Request,
-    end_date: str = Query(..., example="2022-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
-    start_date: str = Query(..., example="2021-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
+    end_date: str = Query(..., example="2030-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
+    start_date: str = Query(..., example="2020-01-01T00:00:00", format="yyyy-MM-ddTHH:mm:ss"),
     key_terms: str = Query(..., example="outbreak"),
-    location: str = Query(..., example="vietnam"),
+    location: str = Query(..., example="Malawi"),
     limit: int = 20,
     offset: int = 0,
     version: str = Header("v1.0", regex='^v[0-9]+\.[0-9]+$')): # TODO: Handle API version
@@ -355,16 +366,9 @@ def perform_healthcheck():
         """
     return {'healthcheck': 'Everything OK!'}
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-
-    openapi_schema = get_openapi(
-        title="Pandemic API",
-        version="1.0",
-        description="API to get information on pandemic articles extracted from the WHO website",
-        routes=app.routes,
-    )
+def custom_openapi():    
+    with open("schema.json", "r+") as FILE:
+        openapi_schema = json.load(FILE)
 
     openapi_schema["paths"]["/article/{articleId}/content"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"content" : "string"}
     openapi_schema["paths"]["/article/{articleId}/response"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"response" : "string"}
