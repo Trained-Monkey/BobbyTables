@@ -1,0 +1,934 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Pandemic API",
+        "description": "API to get information on pandemic articles extracted from the WHO website. Source: https://www.who.int/emergencies/disease-outbreak-news",
+        "version": "1.0"
+    },
+    "paths": {
+        "/article": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article",
+                "description": "Gets a list of articles corresponding to the given input parameters",
+                "operationId": "article_article_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "End Date",
+                            "type": "string",
+                            "format": "yyyy-MM-ddTHH:mm:ss"
+                        },
+                        "example": "2022-01-01T00:00:00",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Start Date",
+                            "type": "string",
+                            "format": "yyyy-MM-ddTHH:mm:ss"
+                        },
+                        "example": "2021-01-01T00:00:00",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Key Terms",
+                            "type": "string"
+                        },
+                        "example": "outbreak",
+                        "name": "key_terms",
+                        "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Location",
+                            "type": "string"
+                        },
+                        "example": "vietnam",
+                        "name": "location",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Limit",
+                            "type": "integer",
+                            "default": 20
+                        },
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Offset",
+                            "type": "integer",
+                            "default": 0
+                        },
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArticleList"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Bad request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}/content": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article Content",
+                "description": "Gets the main content of the article with the given articleId",
+                "operationId": "article_content_article__articleId__content_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Articleid",
+                            "type": "integer"
+                        },
+                        "name": "articleId",
+                        "in": "path"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "content": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No article found with that given id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}/response": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article Response",
+                "description": "Gets the response section of the article with the given articleId",
+                "operationId": "article_response_article__articleId__response_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Articleid",
+                            "type": "integer"
+                        },
+                        "name": "articleId",
+                        "in": "path"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "response": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No article found with that given id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}/assessment": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article Assessment",
+                "description": "Gets the WHO risk assessment section of the article with the given articleId",
+                "operationId": "article_assessment_article__articleId__assessment_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Articleid",
+                            "type": "integer"
+                        },
+                        "name": "articleId",
+                        "in": "path"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "assessment": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No article found with that given id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}/source": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article Source",
+                "description": "Gets source url of the article with the given articleId",
+                "operationId": "article_source_article__articleId__source_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Articleid",
+                            "type": "integer"
+                        },
+                        "name": "articleId",
+                        "in": "path"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "source": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No article found with that given id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}/advice": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article Advice",
+                "description": "Gets the WHO health advice section of the article with the given articleId",
+                "operationId": "article_advice_article__articleId__advice_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Articleid",
+                            "type": "integer"
+                        },
+                        "name": "articleId",
+                        "in": "path"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "advice": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No article found with that given id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}/reports": {
+            "get": {
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Article Report",
+                "description": "Gets a list of reports detected in the article with the given articleId",
+                "operationId": "article_report_article__articleId__reports_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Articleid",
+                            "type": "integer"
+                        },
+                        "name": "articleId",
+                        "in": "path"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Version",
+                            "pattern": "^v[0-9]+\\.[0-9]+$",
+                            "type": "string",
+                            "default": "v1.0"
+                        },
+                        "name": "version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReportList"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No article found with that given id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "error_message"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "error_message": {
+                                            "title": "Error Message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/healthcheck": {
+            "get": {
+                "summary": "Perform Healthcheck",
+                "description": "Simple route for the GitHub Actions to healthcheck on.\n\nMore info is available at:\nhttps://github.com/akhileshns/heroku-deploy#health-check\n\nIt basically sends a GET request to the route & hopes to get a \"200\"\nresponse code. Failing to return a 200 response code just enables\nthe GitHub Actions to rollback to the last version the project was\nfound in a \"working condition\". It acts as a last line of defense in\ncase something goes south.\n\nAdditionally, it also returns a JSON response in the form of:\n\n{\n  'healthcheck': 'Everything OK!'\n}",
+                "operationId": "perform_healthcheck_healthcheck_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Article": {
+                "title": "Article",
+                "required": [
+                    "url",
+                    "date_of_publication",
+                    "headline",
+                    "main_text",
+                    "reports"
+                ],
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "title": "Url",
+                        "type": "string"
+                    },
+                    "date_of_publication": {
+                        "title": "Date Of Publication",
+                        "type": "string"
+                    },
+                    "headline": {
+                        "title": "Headline",
+                        "type": "string"
+                    },
+                    "main_text": {
+                        "title": "Main Text",
+                        "type": "string"
+                    },
+                    "reports": {
+                        "title": "Reports",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Report"
+                        }
+                    }
+                },
+                "example": {
+                    "url": "https://www.who.int/csr/don/17-january-2020-novel-coronavirus-japan-ex-china/en/",
+                    "date_of_publication": "A very nice Item",
+                    "headline": "Novel Coronavirus \u2013 Japan (ex-China)",
+                    "main_text": "On 15 January 2020, the Ministry of Health, Labour and Welfare, Japan (MHLW) reported an imported case of laboratory-confirmed 2019-novel coronavirus (2019-nCoV) from Wuhan, Hubei Province, China. The case-patient is male, between the age of 30-39 years, living in Japan. The case-patient travelled to Wuhan, China in late December and developed fever on 3 January 2020 while staying in Wuhan. He did not visit the Huanan Seafood Wholesale Market or any other live animal markets in Wuhan. He has indicated that he was in close contact with a person with pneumonia. On 6 January, he traveled back to Japan and tested negative for influenza when he visited a local clinic on the same day.",
+                    "reports": [
+                        {
+                            "event_date": "2020-01-03 xx:xx:xx to 2020-01-15",
+                            "locations": [
+                                {
+                                    "country": "China",
+                                    "location": "Wuhan, Hubei Province"
+                                },
+                                {
+                                    "country": "Japan",
+                                    "location": ""
+                                }
+                            ],
+                            "diseases": [
+                                "2019-nCoV"
+                            ],
+                            "syndromes": [
+                                "Fever of unknown Origin"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "ArticleIDPair": {
+                "title": "ArticleIDPair",
+                "required": [
+                    "article",
+                    "articleId"
+                ],
+                "type": "object",
+                "properties": {
+                    "article": {
+                        "$ref": "#/components/schemas/Article"
+                    },
+                    "articleId": {
+                        "title": "Articleid",
+                        "type": "integer"
+                    }
+                }
+            },
+            "ArticleList": {
+                "title": "ArticleList",
+                "required": [
+                    "articles",
+                    "max_articles"
+                ],
+                "type": "object",
+                "properties": {
+                    "articles": {
+                        "title": "Articles",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ArticleIDPair"
+                        }
+                    },
+                    "max_articles": {
+                        "title": "Max Articles",
+                        "type": "integer"
+                    }
+                }
+            },
+
+            "Location": {
+                "title": "Location",
+                "required": [
+                    "country",
+                    "location"
+                ],
+                "type": "object",
+                "properties": {
+                    "country": {
+                        "title": "Country",
+                        "type": "string"
+                    },
+                    "location": {
+                        "title": "Location",
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "country": "China",
+                    "location": "Wuhan, Hubei Province"
+                }
+            },
+            "Report": {
+                "title": "Report",
+                "required": [
+                    "diseases",
+                    "syndromes",
+                    "event_date",
+                    "locations"
+                ],
+                "type": "object",
+                "properties": {
+                    "diseases": {
+                        "title": "Diseases",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "syndromes": {
+                        "title": "Syndromes",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "event_date": {
+                        "title": "Event Date",
+                        "type": "string"
+                    },
+                    "locations": {
+                        "title": "Locations",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Location"
+                        }
+                    }
+                },
+                "example": {
+                    "event_date": "2020-01-03 xx:xx:xx to 2020-01-15",
+                    "locations": [
+                        {
+                            "country": "China",
+                            "location": "Wuhan, Hubei Province"
+                        },
+                        {
+                            "country": "Japan",
+                            "location": ""
+                        }
+                    ],
+                    "diseases": [
+                        "2019-nCoV"
+                    ],
+                    "syndromes": [
+                        "Fever of unknown Origin"
+                    ]
+                }
+            },
+            "ReportList": {
+                "title": "ReportList",
+                "required": [
+                    "reports"
+                ],
+                "type": "object",
+                "properties": {
+                    "reports": {
+                        "title": "Reports",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Report"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

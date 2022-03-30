@@ -2,6 +2,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+# from fastapi import exception_handler
+import json
 
 import sys
 
@@ -23,6 +28,12 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata)
 
+@app.exception_handler(RequestValidationError)
+async def missing_parameters(request, exception):
+    return JSONResponse({
+        "error_message": "Bad request"
+    }, status_code = 400)
+    
 """
 Routes set up according to stoplight documentation
 link: https://bobbytables.stoplight.io/docs/pandemic-api/YXBpOjQzMjI3NTU4-pandemic-api
@@ -311,16 +322,9 @@ def perform_healthcheck():
         """
     return {'healthcheck': 'Everything OK!'}
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-
-    openapi_schema = get_openapi(
-        title="Pandemic API",
-        version="1.0",
-        description="API to get information on pandemic articles extracted from the WHO website",
-        routes=app.routes,
-    )
+def custom_openapi():    
+    with open("schema.json", "r+") as FILE:
+        openapi_schema = json.load(FILE)
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
