@@ -9,8 +9,6 @@ import { useCallback } from 'react';
 import type {MapRef} from 'react-map-gl';
 import { features } from 'process';
 
-
-
 export default function OurMap() {
 
     const MAPBOX_TOKEN = 'pk.eyJ1IjoicG9pYm9pIiwiYSI6ImNsMTYwaTZuazAxOHMzaXFzdjkzZW4wNm8ifQ.MH9qcxmXZcPGKoMdz_eUvg'; // Set your mapbox token here
@@ -20,17 +18,27 @@ export default function OurMap() {
 	//var default_info = null;
 	const mapRef = React.useRef<MapRef>(null);
     const [hoverInfo, setHoverInfo] = React.useState(default_info);
+	const [clickInfo, setClickInfo] = React.useState(default_info);
 
 	function test() {
         var a = mapRef.current?.getStyle().layers
 		console.log(a)
     }
     
+	const onclick = useCallback(event => {
+		const {
+			features,
+		} = event;
+
+		var country = (event.features && event.features[0]).properties['name_en']
+
+	}, []);
+
     const onHover = useCallback(event => {
 		
 		const {
 			features,
-		  } = event;
+		} = event;
 
         const country = event.features && event.features[0];
 
@@ -42,7 +50,6 @@ export default function OurMap() {
 
         setHoverInfo(new_state);
     }, []);
-
 
 	const selectedCountry = (hoverInfo.hasOwnProperty('countryName')) ? hoverInfo && hoverInfo.countryName : '';
 	const filter = React.useMemo(() => ['in', 'color_group', selectedCountry], [selectedCountry]);
@@ -62,6 +69,7 @@ export default function OurMap() {
 				mapStyle="mapbox://styles/mapbox/dark-v10"
 				mapboxAccessToken={MAPBOX_TOKEN}
                 onMouseMove={onHover}
+				onClick={onclick}
                 interactiveLayerIds={['country_boundaries']}
 				
 			>
