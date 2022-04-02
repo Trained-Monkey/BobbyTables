@@ -19,6 +19,8 @@ export default function OurMap() {
 	const mapRef = React.useRef<MapRef>(null);
 	const [clickInfo, setClickInfo] = React.useState(default_info);
 
+	var locations: string;
+
 	function test() {
         var a = mapRef.current?.getStyle().layers
 		console.log(a)
@@ -92,14 +94,14 @@ export default function OurMap() {
 	const articleQuerierRef = React.useRef();
 
 	function fetchData(location: string) {
-		if (articleQuerierRef.current) {
-			articleQuerierRef.current.doFetch(location)
-		}
+		//if (articleQuerierRef.current) {
+		//	articleQuerierRef.current.doFetch(location)
+		//}
 	}
 
     return (
 		<div>
-			<ArticleQuerier ref = {articleQuerierRef}/>
+			<ArticleQuerier ref = {articleQuerierRef} locations={locations} />
 			<button onClick={fetchData('Malawi')}>Click me</button>
 			<Map
 				ref={mapRef}
