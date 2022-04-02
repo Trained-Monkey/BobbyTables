@@ -7,12 +7,19 @@ import CreatableSelect from 'react-select/creatable';
 import makeAnimated from 'react-select/animated';
 import { ActionMeta, OnChangeValue } from 'react-select'
 
+
+import {useDispatch} from 'react-redux'
+import { useAppSelector, useAppDispatch } from '../app/hooks' 
+import { addArticle, addBulkArticles } from '../features/article/articleSlice'
+
 import {Selection} from './TimeQuerier'
 
 import TimeQuerier from './TimeQuerier';
 
 
 export default function ArticleQuerier() {
+
+    const dispatch = useAppDispatch()
 
     let country: string = "Australia"
 
@@ -50,10 +57,10 @@ export default function ArticleQuerier() {
     }
 
     function testFetch() {
-        const url = "https://seng3011-bobby-tables-backend.herokuapp.com/"
+        const url = "https://seng3011-bobby-tables-backend.herokuapp.com/article"
         const start_date = "2019-01-01T00:00:00"
         const end_date = "2023-01-01T00:00:00"
-        const key_terms = ""
+        const key_terms = "outbreak"
         const location = "Malawi"
         const params = {
             start_date,
@@ -63,9 +70,19 @@ export default function ArticleQuerier() {
             limit: 20,
             offset: 0,
         }
-        axios.get(url, params)
+        axios.get(url, {params})
                 .then((response) => {
                     console.log(response)
+                    const response_article = response.data.articles[0].article
+                    const article = {
+                        url: response_article.url,
+                        date_of_publication: response_article.date_of_publication,
+                        headline: response_article.headline,
+                        main_text: response_article.main_text,
+                        id: response.data.articles[0].articleId,
+                        reports: response_article.reports,
+                    }
+                    dispatch(addArticle(article))
                 })
                 .catch((error) => {
                     console.error(error)
