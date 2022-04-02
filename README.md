@@ -10,4 +10,4 @@ Added required documents for deliverable 2.\
 Design details has been updated.\
 Repo now contains scraper, backend implementation and tests.\
 Backend is deployed at: https://seng3011-bobby-tables-backend.herokuapp.com/ \
-Documentation is available here: https://seng3011-bobby-tables-backend.herokuapp.com/docs\
+Documentation is available here: https://seng3011-bobby-tables-backend.herokuapp.com/docs
