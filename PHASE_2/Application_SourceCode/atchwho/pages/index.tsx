@@ -11,13 +11,13 @@ export default function Home() {
 
 
   return (
-    <>
+    <html>
       <Head>
         <title>atchWHO</title>
       </Head>
       <body style={{overflow: 'hidden', margin: 'auto'}}>
         <OurMap />
       </body>
-    </>
+    </html>
   );
 }

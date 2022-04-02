@@ -29,7 +29,7 @@ def set_db(new_db = None):
         latest_scraper_version = "0.0.9"
         db = new_db
 
-def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, location: str, limit: int = 20,
+def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, locations: list, limit: int = 20,
                     offset: int = 0):
     query = {
         'scraper_version': latest_scraper_version,
@@ -37,8 +37,8 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
     }
     if len(key_terms) > 0:
         query.update({'search_terms': {"$in": key_terms}})
-    if len(location) > 0:
-        query.update({'locations': {"$in": [location]}})
+    if len(locations) > 0:
+        query.update({'locations': {"$in": locations}})
     print(query)
 
     cursor = db.articles.find(query).skip(offset).limit(limit)

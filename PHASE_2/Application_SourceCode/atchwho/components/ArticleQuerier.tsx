@@ -16,11 +16,10 @@ import {Selection} from './TimeQuerier'
 
 import TimeQuerier from './TimeQuerier';
 
-const ArticleQuerier = forwardRef((props, ref) => {
+
+export default function ArticleQuerier(locations: string[]) {
 
     const dispatch = useAppDispatch()
-
-    let country: string = "Australia"
 
     const defaultDateState:Selection = {
         startDate: new Date(),
@@ -54,14 +53,8 @@ const ArticleQuerier = forwardRef((props, ref) => {
         setQueries(results)
     }
 
-    React.useImperativeHandle(ref, () => ({
-        doFetch(location: string) {
-            console.log("IT WORKED!!!!!!!!!!!!")
-            doRecursiveFetch(location, 0);
-        }
-    }))
 
-    function doRecursiveFetch(location: string, offset: number, limit: number = 20) {
+    function doRecursiveFetch(offset: number, limit: number = 20) {
         if (offset === 0) {
             dispatch(clearArticles())
         }
@@ -69,7 +62,7 @@ const ArticleQuerier = forwardRef((props, ref) => {
             start_date: dates[0].startDate.toISOString().split('.')[0],
             end_date: dates[0].endDate?.toISOString().split('.')[0],
             key_terms: queries.join(','),
-            location,
+            location: locations.join(','),
             limit,
             offset
         }
@@ -90,7 +83,7 @@ const ArticleQuerier = forwardRef((props, ref) => {
                     dispatch(addArticle(article))
                 })
                 if (data.max_articles >= limit) {
-                    doRecursiveFetch(location, limit, limit)
+                    doRecursiveFetch(limit, limit)
                 }
             })
             .catch((error: any) => {
@@ -106,10 +99,8 @@ const ArticleQuerier = forwardRef((props, ref) => {
             <div style={{maxWidth: '85%', margin: 20}}>
                 <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
             </div>
+            <button onClick={() => {doRecursiveFetch(0, 20)}}>Search</button>
         </div>
     )
-});
+};
 
-ArticleQuerier.displayName = "ArticleQuerier";
-
-export default ArticleQuerier;

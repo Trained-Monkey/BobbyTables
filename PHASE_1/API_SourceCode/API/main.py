@@ -127,7 +127,8 @@ async def article(
     limit = min(limit, 50)
 
     terms_list = key_terms.split(',')
-    articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
+    locations_list = location.split(',')
+    articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, locations_list, limit, offset)
     zipped = zip(articles, ids)
     output = []
     for result in zipped:
