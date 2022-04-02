@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
+from fastapi.middleware.cors import CORSMiddleware
 
 import logging
 
@@ -28,6 +29,17 @@ tags_metadata = [
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
+
+origins = [
+    "http://localhost",
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+)
 
 """
 Routes set up according to stoplight documentation
