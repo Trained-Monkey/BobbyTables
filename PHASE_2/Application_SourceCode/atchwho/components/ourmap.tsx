@@ -18,6 +18,7 @@ export default function OurMap() {
 	//var default_info = null;
 	const mapRef = React.useRef<MapRef>(null);
 	const [clickInfo, setClickInfo] = React.useState(default_info);
+	const [hoverInfo, setHoverInfo] = React.useState(default_info);
 
 	function test() {
         var a = mapRef.current?.getStyle().layers
@@ -77,10 +78,11 @@ export default function OurMap() {
 			let reports_len = reports.length
 			for (let j = 0; j < reports_len; j++) {
 				let report_locations = reports[j].locations
-				let report_locations_len = reports[j].locations.length
+				let report_locations_len = report_locations.length
 				for (let k = 0; k < report_locations_len; k++) {
-					console.log(report_locations[k].country)
-					console.log(report_locations[k].location)
+					
+					//console.log(report_locations[k].country)
+					//console.log(report_locations[k].location)
 				}
 			}
 		}
@@ -97,6 +99,18 @@ export default function OurMap() {
 		}
 	}
 
+	const onHover = useCallback(event => {
+		const country = event.features && event.features[0];
+		setHoverInfo({
+		  longitude: event.lngLat.lng,
+		  latitude: event.lngLat.lat,
+		  countryName: country && country.properties.name_en
+		});
+	  }, []);
+
+	const selectedCountry = (hoverInfo && hoverInfo.countryName) || '';
+	const filter = React.useMemo(() => ['==', 'name_en', selectedCountry], [selectedCountry])
+
     return (
 		<div>
 			<ArticleQuerier ref = {articleQuerierRef}/>
@@ -111,11 +125,13 @@ export default function OurMap() {
 				style={{width: '100vw', height: '100vh', content: 'hidden'}}
 				mapStyle="mapbox://styles/mapbox/dark-v10"
 				mapboxAccessToken={MAPBOX_TOKEN}
+				onMouseMove={onHover}
 				onClick={onclick}
                 interactiveLayerIds={['country_boundaries']}				
 			>
                 <Source type="vector" url="mapbox://mapbox.country-boundaries-v1">
                     <Layer beforeId="waterway-label" {...countriesLayer} />
+					<Layer beforeId="waterway-label" {...highlightLayer} filter={filter}/>
 				</Source>    
 			</Map>
 		</div>

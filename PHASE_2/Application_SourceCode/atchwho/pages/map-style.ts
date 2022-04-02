@@ -4,20 +4,29 @@ export const countriesLayer: FillLayer = {
   id: 'country_boundaries',
   type: 'fill',
   'source-layer': 'country_boundaries',
+  filter: [
+    'all',
+    ['match', ['get', 'worldview'], ['all', 'US'], true, false],
+    ["!=", "true", ["get", "disputed"]],
+  ],
   paint: {
     'fill-outline-color': 'rgba(255,130,0,0.7)',
     'fill-color': 'rgba(255,130,0,0.05)'
   }
 };
+
 // Highlighted county polygons
 export const highlightLayer: FillLayer = {
-  id: 'countries-highlighted',
-  type: 'fill',
-  source: 'Mapbox Countries v1',
-  'source-layer': 'country_boundaries',
-  paint: {
-    'fill-outline-color': '#484896',
-    'fill-color': '#6e599f',
-    'fill-opacity': 0.75
-  }
-};
+	id: 'country_highlighted',
+	type: 'fill',
+	'source-layer': 'country_boundaries',
+	filter: [
+	  'all',
+	  ['match', ['get', 'worldview'], ['all', 'US'], true, false],
+	  ["!=", "true", ["get", "disputed"]],
+	],
+	paint: {
+		'fill-color': 'rgba(255,130,0,1)',
+	}
+}
+
