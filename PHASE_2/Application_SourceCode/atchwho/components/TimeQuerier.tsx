@@ -9,7 +9,7 @@ import 'react-date-range/dist/theme/default.css'; // theme css file
 
 export interface Selection {
 	startDate: Date,
-	endDate: Date | null,
+	endDate: Date | undefined,
 	key: string,
 }
 export interface SelectionState {
