@@ -54,10 +54,18 @@ export default function OurMap() {
 	const selectedCountry = (hoverInfo.hasOwnProperty('countryName')) ? hoverInfo && hoverInfo.countryName : '';
 	const filter = React.useMemo(() => ['in', 'color_group', selectedCountry], [selectedCountry]);
 
+	const articleQuerierRef = React.useRef();
+
+	function fetchData(location: string) {
+		if (articleQuerierRef.current) {
+			articleQuerierRef.current.doFetch(location)
+		}
+	}
+
     return (
 		<div>
-			<ArticleQuerier />
-			<button onClick={test}>Click me</button>
+			<ArticleQuerier ref = {articleQuerierRef}/>
+			<button onClick={fetchData('Malawi')}>Click me</button>
 			<Map
 				ref={mapRef}
 				initialViewState={{

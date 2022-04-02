@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 
 const axios = require('axios')
 
@@ -16,8 +16,7 @@ import {Selection} from './TimeQuerier'
 
 import TimeQuerier from './TimeQuerier';
 
-
-export default function ArticleQuerier() {
+const ArticleQuerier = forwardRef((props, ref) => {
 
     const dispatch = useAppDispatch()
 
@@ -55,9 +54,12 @@ export default function ArticleQuerier() {
         setQueries(results)
     }
 
-    function testFetch() {
-        doRecursiveFetch('Malawi', 0)
-    }
+    React.useImperativeHandle(ref, () => ({
+        doFetch(location: string) {
+            console.log("IT WORKED!!!!!!!!!!!!")
+            doRecursiveFetch(location, 0);
+        }
+    }))
 
     function doRecursiveFetch(location: string, offset: number, limit: number = 20) {
         if (offset === 0) {
@@ -104,7 +106,10 @@ export default function ArticleQuerier() {
             <div style={{maxWidth: '85%', margin: 20}}>
                 <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
             </div>
-            <button onClick={testFetch}>TEST</button>
         </div>
     )
-}
+});
+
+ArticleQuerier.displayName = "ArticleQuerier";
+
+export default ArticleQuerier;
