@@ -12,6 +12,7 @@ import pkgutil
 from dotenv import load_dotenv
 import pymongo
 import datefinder
+import geocoder
 import geograpy
 import scrapy
 import nltk
@@ -20,7 +21,8 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.0.10'
+SCRAPER_VERSION = '0.1.5'
+
 
 WINDOW_SIZE = 26
 GENERAL_TERMS = ['outbreak', 'infection', 'fever', 'epidemic', 'infectious', 'illness', 'bacteria', 'emerging',
@@ -29,7 +31,7 @@ SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthr
                   'smallpox', 'tularemia', 'junin fever', 'machupo fever', 'guanarito fever', 'chapare fever',
                   'lassa fever', 'lujo fever', 'hantavirus', 'rift valley fever',
                   'crimean congo hemorrhagic fever', 'dengue', 'ebola',
-                  'marburg']  # TODO: Add 'other related pox viruses
+                  'marburg', 'covid', 'coronavirus', 'covid-19', 'ncov19']  # TODO: Add 'other related pox viruses
 WINDOW_THRESHOLD = 3
 
 load_dotenv()
@@ -181,11 +183,13 @@ class WHOScraper(CrawlSpider):
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
         date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
-        article_reports = self.find_reports(article_html)
+        article_reports = self.find_reports(article_html.split('Public health response')[0])
         article_locations = []
         for report in article_reports:
-            article_locations += report['locations']
-        article_locations = list(set(article_locations))
+            report_locations = report['locations']
+            for report_location in report_locations:
+                article_locations += report_location['address_components']
+        
         article_terms = self.find_search_terms(article_html)
         output = {
             'url': article_url,
@@ -196,7 +200,7 @@ class WHOScraper(CrawlSpider):
             'reports': article_reports,
             'scraper_version': SCRAPER_VERSION,
             'search_terms': article_terms,
-            'locations': article_locations,
+            'locations': list(set(article_locations)),
             'id': id_to_use
         }
         if updating:
@@ -292,11 +296,11 @@ class WHOScraper(CrawlSpider):
                 if '/' in disease:
                     sub_disease_words = disease.split('/')
                     for sub_disease in sub_disease_words:
-                        if sub_disease in window_string.lower():
+                        if sub_disease in window_string.lower() or sub_disease.lower() in window_string.lower():
                             contains_disease = True
                             matched_disease_list.append(disease)
                 # Search for the whole string
-                if disease in window_string.lower():
+                if disease in window_string.lower() or disease.lower() in window_string.lower():
                     contains_disease = True
                     matched_disease_list.append(disease)
 
@@ -345,8 +349,80 @@ class WHOScraper(CrawlSpider):
                                 valid_locations.append(location)
                             
             locations = valid_locations
+
+            # Process locations properly
+            processed_locations = []
+            # First, check if we have something in the cache that matches this query
+            for location in locations:
+                if cache_db.locations.count_documents({"queries": {"$in": [location]}}, limit=1) != 0:
+                    # Just fetch the cached results
+                    location_data = cache_db.locations.find_one({"queries": {"$in": [location]}})
+                    if location_data['place_id'] is None:
+                        location_data = {
+                            'location': location,
+                            'country': '',
+                            'address_components': [location],
+                            'lat': None,
+                            'lng': None,
+                        }
+                else:
+                    g = geocoder.google(location, key=str(os.getenv('GC_GEOCODING_API_KEY')))
+                    if g.error is not False:
+                        # There has been an error
+                        # Cache this result so we do not constantly search for it
+                        cache_db.locations.update_one({"place_id": None}, {"$push": {"queries": location}})
+                        location_data = {
+                            'location': location,
+                            'country': '',
+                            'address_components': [location],
+                            'lat': None,
+                            'lng': None,
+                        }
+                        processed_locations.append(location_data)
+                        continue
+                    geodata = g.json
+                    # Check if there is already a place in cache that matches the place ID of this new query
+                    # So we don't waste requests in the future
+                    if cache_db.locations.count_documents({"place_id": geodata['place']}, limit=1) != 0:
+                        pre_cached = cache_db.locations.find_one({"place_id": geodata['place']})
+                        pre_cached['queries'].append(location)
+                        cache_db.locations.update_one(
+                            {"place_id": geodata['place']}, {"$set": {"queries": pre_cached['queries']}})
+                        location_data = pre_cached
+                    else:
+                        # Create location_data
+                        address_components = []
+                        long_only = []
+                        for component in g.raw['address_components']:
+                            address_components.append(component['long_name'])
+                            long_only.append(component['long_name'])
+                            if component['short_name'] != component['long_name']:
+                                address_components.append(component['short_name'])
+                        location_data = {
+                            "queries": [location],
+                            "place_id": g.place,
+                            "country": g.country,
+                            "state": g.state,
+                            "county": g.county,
+                            "city": g.city,
+                            "lat": g.lat,
+                            "lng": g.lng,
+                            "address": g.address,
+                            "address_components": address_components,
+                            "long_address": ', '.join(long_only)
+                        }
+                        cache_db.locations.insert_one(location_data)
+                processed_locations.append(
+                    {'location': location,
+                     'country': location_data['country'],
+                     'address_components': location_data['address_components'],
+                     'lat': location_data['lat'],
+                     'lng': location_data['lng'],
+                     })
+            locations = processed_locations
+
             if len(locations) == 0:
-                contains_location=False
+                contains_location = False
 
             report_dict = {
                 'index': int(start_window_index + (WINDOW_SIZE / 2)),
