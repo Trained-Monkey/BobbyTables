@@ -357,17 +357,24 @@ class WHOScraper(CrawlSpider):
                 if cache_db.locations.count_documents({"queries": {"$in": [location]}}, limit=1) != 0:
                     # Just fetch the cached results
                     location_data = cache_db.locations.find_one({"queries": {"$in": [location]}})
+                    if location_data['place_id'] is None:
+                        location_data = {
+                            'location': location,
+                            'country': '',
+                            'address_components': [location]
+                        }
                 else:
                     g = geocoder.google(location, key=str(os.getenv('GC_GEOCODING_API_KEY')))
                     if g.error is not False:
                         # There has been an error
                         # Cache this result so we do not constantly search for it
                         cache_db.locations.update_one({"place_id": None}, {"$push": {"queries": location}})
-                        processed_locations.append({
+                        location_data = {
                             'location': location,
                             'country': '',
                             'address_components': [location]
-                        })
+                        }
+                        processed_locations.append(location_data)
                         continue
                     geodata = g.json
                     # Check if there is already a place in cache that matches the place ID of this new query
