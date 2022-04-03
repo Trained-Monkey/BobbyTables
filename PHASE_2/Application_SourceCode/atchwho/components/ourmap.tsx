@@ -3,6 +3,7 @@ import Script from 'next/script';
 import Map, {Popup, Layer, Source, Marker} from 'react-map-gl';
 import {countriesLayer, highlightLayer} from '../pages/map-style';
 import ArticleQuerier from './ArticleQuerier';
+import Modal from './ourmodal';
 import { stringify } from 'querystring';
 import { useCallback } from 'react';
 
@@ -19,6 +20,8 @@ export default function OurMap() {
 	const mapRef = React.useRef<MapRef>(null);
 	const [clickInfo, setClickInfo] = React.useState(default_info);
 	const [hoverInfo, setHoverInfo] = React.useState(default_info);
+	const [showModal, setShowModal] = React.useState(false);
+
 
 	var locations: string;
 
@@ -115,7 +118,7 @@ export default function OurMap() {
 
     return (
 		<div>
-			<ArticleQuerier ref = {articleQuerierRef} locations={locations} />
+			<button onClick={() => setShowModal(true)}>Open Modal</button>
 			<button onClick={fetchData('Malawi')}>Click me</button>
 			<Map
 				ref={mapRef}
@@ -136,6 +139,11 @@ export default function OurMap() {
 					<Layer beforeId="waterway-label" {...highlightLayer} filter={filter}/>
 				</Source>    
 			</Map>
+			<div id='modal-root'>
+				<Modal onClose={() => setShowModal(false)} show={showModal} title={"Date Selection"}>
+					<ArticleQuerier ref = {articleQuerierRef} locations={locations}/>
+				</Modal>
+			</div>
 		</div>
         
     )
