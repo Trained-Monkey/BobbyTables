@@ -96,7 +96,7 @@ export default function ArticleQuerier(locations: string[]) {
     return (
         <div style={{maxWidth: 740, backgroundColor: 'grey'}}>
             <TimeQuerier selections={dates} setSelections={setDates} />
-            <div style={{maxWidth: '85%', margin: 20}}>
+            <div style={{maxWidth: '85%', margin: '1px'}}>
                 <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
             </div>
             <button onClick={() => {doRecursiveFetch(0, 20)}}>Search</button>
