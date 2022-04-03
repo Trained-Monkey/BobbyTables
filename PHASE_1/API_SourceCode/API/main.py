@@ -67,7 +67,7 @@ Parameters:
  * end_date: string, required     - Inclusive end_date of publication range, format:yyyy-MM-ddTHH:mm:ss
  * start_date: string, required   - Inclusive start_date of publication range, format:yyyy-MM-ddTHH:mm:ss
  * key_terms: string, required    - Comma separated values of keyterms to be contained in articles
- * location: string, required     - Values of location to extract articles from
+ * location: string, required     - Comma separated values of location to extract articles from
  * limit: integer                 - Maximum number of articles to return in list
  * offset: integer                - Number of articles to skip
 
@@ -127,7 +127,8 @@ async def article(
     limit = min(limit, 50)
 
     terms_list = key_terms.split(',')
-    articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, location, limit, offset)
+    locations_list = location.split(',')
+    articles, ids, max_articles = helpers.filter_articles(end_date_datetime, start_date_datetime, terms_list, locations_list, limit, offset)
     zipped = zip(articles, ids)
     output = []
     for result in zipped:
