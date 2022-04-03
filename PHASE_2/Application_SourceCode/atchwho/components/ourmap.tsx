@@ -7,6 +7,8 @@ import Modal from './ourmodal';
 import { stringify } from 'querystring';
 import { useCallback } from 'react';
 
+import { useAppSelector, useAppDispatch } from '../app/hooks' 
+
 import type {MapRef} from 'react-map-gl';
 import { features } from 'process';
 
@@ -25,7 +27,8 @@ export default function OurMap() {
 
 	const [showModal, setShowModal] = React.useState(false);
 
-	var locations: string;
+	const articles = useAppSelector(state => state.articles.articles)
+	console.log(articles)
 
 	function test() {
         var a = mapRef.current?.getStyle().layers
