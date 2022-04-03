@@ -360,6 +360,9 @@ class WHOScraper(CrawlSpider):
                 else:
                     g = geocoder.google(location, key=str(os.getenv('GC_GEOCODING_API_KEY')))
                     if g.error is not False:
+                        # There has been an error
+                        # Cache this result so we do not constantly search for it
+                        cache_db.locations.update_one({"place_id": None}, {"$push": {"queries": location}})
                         processed_locations.append({
                             'location': location,
                             'country': '',
