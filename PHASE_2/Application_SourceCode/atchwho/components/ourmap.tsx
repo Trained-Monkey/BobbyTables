@@ -127,7 +127,7 @@ export default function OurMap() {
 					longitude: -122.4,
 					zoom: 3
 				}}
-				style={{width: '100vw', height: '100vh', content: 'hidden'}}
+				style={{width: '100vw', height: '100vh', content: 'hidden', paddingTop: '10px'}}
 				mapStyle="mapbox://styles/mapbox/dark-v10"
 				mapboxAccessToken={MAPBOX_TOKEN}
 				onMouseMove={onHover}
