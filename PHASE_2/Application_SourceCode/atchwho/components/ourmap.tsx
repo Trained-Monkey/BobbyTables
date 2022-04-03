@@ -18,7 +18,8 @@ export default function OurMap() {
 	//var default_info = null;
 	const mapRef = React.useRef<MapRef>(null);
 	const [clickInfo, setClickInfo] = React.useState(default_info);
-	const [hoverInfo, setHoverInfo] = React.useState(default_info);
+	const defaultSelCount: string[] = []
+	const [selectedCountries, setSelectedCountries] = React.useState(defaultSelCount);
 
 	var locations: string;
 
@@ -63,6 +64,7 @@ export default function OurMap() {
 		"max_articles": 0
 	  }
 
+	  /*
 	const onclick = useCallback(event => {
 		const {
 			features,
@@ -92,6 +94,28 @@ export default function OurMap() {
 		// place report info in bootstrap card
 
 	}, []);
+	*/
+	
+	const onclick = useCallback(event => {
+		const {
+			features,
+		} = event;
+
+		var country = (event.features && event.features[0]).properties['name_en']
+		console.log(country)
+		if (selectedCountries.includes(country)) {
+			const newCountries: string[] = []
+			selectedCountries.forEach((selCountry) => {
+				if (selCountry !== country) {
+					newCountries.push(selCountry)
+				}
+			})
+			setSelectedCountries(newCountries)
+		} else {
+			const newCountries: string[] = [country]
+			setSelectedCountries(newCountries.concat(selectedCountries))
+		}
+	}, [selectedCountries]);
 
 	const articleQuerierRef = React.useRef();
 
@@ -101,21 +125,11 @@ export default function OurMap() {
 		//}
 	}
 
-	const onHover = useCallback(event => {
-		const country = event.features && event.features[0];
-		setHoverInfo({
-		  longitude: event.lngLat.lng,
-		  latitude: event.lngLat.lat,
-		  countryName: country && country.properties.name_en
-		});
-	  }, []);
-
-	const selectedCountry = (hoverInfo && hoverInfo.countryName) || '';
-	const filter = React.useMemo(() => ['==', 'name_en', selectedCountry], [selectedCountry])
+	const filter = React.useMemo(() => ["in", 'name_en', ...selectedCountries], [selectedCountries])
 
     return (
 		<div>
-			<ArticleQuerier ref = {articleQuerierRef} locations={locations} />
+			<ArticleQuerier ref = {articleQuerierRef} locations={selectedCountries} />
 			<button onClick={fetchData('Malawi')}>Click me</button>
 			<Map
 				ref={mapRef}
@@ -127,7 +141,6 @@ export default function OurMap() {
 				style={{width: '100vw', height: '100vh', content: 'hidden'}}
 				mapStyle="mapbox://styles/mapbox/dark-v10"
 				mapboxAccessToken={MAPBOX_TOKEN}
-				onMouseMove={onHover}
 				onClick={onclick}
                 interactiveLayerIds={['country_boundaries']}				
 			>
