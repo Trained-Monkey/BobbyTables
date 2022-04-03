@@ -152,7 +152,17 @@ export default function OurMap() {
                 <Source type="vector" url="mapbox://mapbox.country-boundaries-v1">
                     <Layer beforeId="waterway-label" {...countriesLayer} />
 					<Layer beforeId="waterway-label" {...highlightLayer} filter={filter}/>
-				</Source>    
+				</Source>
+				{
+					articles.map((article, aIndex) => {
+						return article.reports.map((report, rIndex) => {
+							return report.locations.map((location, lIndex) => {
+								console.log(location)
+								return <Marker latitude={location.lat} longitude={location.lng} key={article.url + "-" + rIndex + "-" + lIndex}/>
+							})
+						})
+					})
+				}
 			</Map>
 			<div id='modal-root'>
 				<Modal onClose={() => setShowModal(false)} show={showModal} title={"Date Selection"}>
