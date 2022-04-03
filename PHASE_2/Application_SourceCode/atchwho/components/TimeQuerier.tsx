@@ -21,7 +21,7 @@ export default function TimeQuerier(props: SelectionState) {
 
 	
 	
-	const minDate = addDays(new Date(), -30); // TODO: Set this to minimum date of data
+	const minDate = addDays(new Date(), -3600); // TODO: Set this to minimum date of data
 
 	return (
 		<>

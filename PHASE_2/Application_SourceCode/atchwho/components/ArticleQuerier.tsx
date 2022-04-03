@@ -6,6 +6,7 @@ const axios = require('axios')
 import CreatableSelect from 'react-select/creatable';
 import makeAnimated from 'react-select/animated';
 import { ActionMeta, OnChangeValue } from 'react-select'
+import { Button } from 'react-bootstrap';
 
 
 import {useDispatch} from 'react-redux'
@@ -57,7 +58,6 @@ export default function ArticleQuerier(props: Location) {
         setQueries(results)
     }
 
-
     function doRecursiveFetch(offset: number, limit: number = 20) {
         if (offset === 0) {
             dispatch(clearArticles())
@@ -99,14 +99,17 @@ export default function ArticleQuerier(props: Location) {
 
     }
 
-
     return (
-        <div style={{maxWidth: 740, backgroundColor: 'grey'}}>
+        <div style={{maxWidth: 575, backgroundColor: 'grey'}}>
             <TimeQuerier selections={dates} setSelections={setDates} />
-            <div style={{maxWidth: '85%', margin: '1px'}}>
-                <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
+            <div style={{display: 'flex', justifyContent: 'center'}}>
+                <div style={{width: '100%'}}>
+                    <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
+                </div>
+                <div style={{width: '15%'}}>
+                    <Button variant="primary" onClick={() => {doRecursiveFetch(0, 20)}}>Search</Button> 
+                </div>
             </div>
-            <button onClick={() => {doRecursiveFetch(0, 20)}}>Search</button>
         </div>
     )
 };

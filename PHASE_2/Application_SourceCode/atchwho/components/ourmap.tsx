@@ -6,7 +6,10 @@ import ArticleQuerier from './ArticleQuerier';
 import Modal from './ourmodal';
 import { stringify } from 'querystring';
 import { useCallback } from 'react';
-
+import { OffCanvas } from 'react-offcanvas';
+import { Button } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
+import { Offcanvas } from 'react-bootstrap';
 import { useAppSelector, useAppDispatch } from '../app/hooks' 
 
 import type {MapRef} from 'react-map-gl';
@@ -25,7 +28,15 @@ export default function OurMap() {
 	const defaultSelCount: string[] = []
 	const [selectedCountries, setSelectedCountries] = React.useState(defaultSelCount);
 
-	const [showModal, setShowModal] = React.useState(false);
+	const [showCanvas, setShowCanvas] = React.useState(false);
+	const [showSide, setShowSide] = React.useState(false);
+	const [showBottom, setShowBottom] = React.useState(false);
+
+  	const handleCloseSide = () => setShowSide(false);
+  	const handleShowSide = () => setShowSide(true);
+	
+	const handleCloseBottom = () => setShowBottom(false);
+  	const handleShowBottom = () => setShowBottom(true);
 
 	const articles = useAppSelector(state => state.articles.articles)
 	console.log(articles)
@@ -34,38 +45,6 @@ export default function OurMap() {
         var a = mapRef.current?.getStyle().layers
 		console.log(a)
     }
-
-	  /*
-	const onclick = useCallback(event => {
-		const {
-			features,
-		} = event;
-
-		var country = (event.features && event.features[0]).properties['name_en']
-		mapRef.current?.flyTo({center: [parseInt(event.lngLat.lng), parseInt(event.lngLat.lat)], zoom: 4})
-		// pass country to query string
-		// receive articles
-		// get reports from articles
-		let articles= myJSON.articles
-		let articles_len = articles.length
-		for (let i = 0; i < articles_len; i++) {
-			let reports = myJSON.articles[i].article.reports
-			let reports_len = reports.length
-			for (let j = 0; j < reports_len; j++) {
-				let report_locations = reports[j].locations
-				let report_locations_len = report_locations.length
-				for (let k = 0; k < report_locations_len; k++) {
-					
-					//console.log(report_locations[k].country)
-					//console.log(report_locations[k].location)
-				}
-			}
-		}
-		// place marker on location from report
-		// place report info in bootstrap card
-
-	}, []);
-	*/
 	
 	const onclick = useCallback(event => {
 		const {
@@ -88,18 +67,12 @@ export default function OurMap() {
 		}
 	}, [selectedCountries]);
 
-	function fetchData(location: string) {
-		//if (articleQuerierRef.current) {
-		//	articleQuerierRef.current.doFetch(location)
-		//}
-	}
-
 	const filter = React.useMemo(() => ["in", 'name_en', ...selectedCountries], [selectedCountries])
 
     return (
 		<div>
-			<button onClick={() => setShowModal(true)}>Open Modal</button>
-			<button onClick={() => fetchData('Malawi')}>Click me</button>
+			<Button variant="primary" onClick={handleShowSide}>SIDE</ Button>
+			<Button variant="primary" onClick={handleShowBottom}>BOTTOM</ Button>
 			<Map
 				ref={mapRef}
 				initialViewState={{
@@ -129,10 +102,45 @@ export default function OurMap() {
 				}
 			</Map>
 
-			<div id='modal-root'>
-				<Modal onClose={() => setShowModal(false)} show={showModal} title={"Date Selection"}>
-					<ArticleQuerier locations={selectedCountries}/>
-				</Modal>
+			<div id='offCanvas-root'>
+				<Offcanvas show={showSide} onHide={handleCloseSide} style={{width: 600}}>
+					<Offcanvas.Header closeButton>
+					<Offcanvas.Title>Offcanvas</Offcanvas.Title>
+					</Offcanvas.Header>
+					<Offcanvas.Body  style={{width: 600}}>
+						<ArticleQuerier locations={selectedCountries}/>
+					</Offcanvas.Body>
+				</Offcanvas>
+
+				<Offcanvas show={showBottom} onHide={handleCloseBottom} placement='bottom' style={{height: 300}}>
+					<Offcanvas.Header closeButton>
+					<Offcanvas.Title>Reports</Offcanvas.Title>
+					</Offcanvas.Header>
+					<Offcanvas.Body  style={{width: '100%'}}>
+					{
+					articles.map((article, aIndex) => {
+						return article.reports.map((report, rIndex) => {
+							return <div style={{display: 'inline-grid'}} key={article.url + "-" + rIndex}>
+								<Card style={{ width: '18rem', margin: '10px'}}>
+									<Card.Img variant="top" src="../public/heart.png" />
+										<Card.Body>
+											<Card.Title>{article.headline}</Card.Title>
+											<Card.Text>
+												<div>
+													{article.date_of_publication}
+												</div>												
+												<a href={article.url}>Link</a>
+											</Card.Text>
+											<Button variant="primary">Button</Button>
+										</Card.Body>
+								</Card>
+							</div>
+
+						})
+					})
+				}
+					</Offcanvas.Body>
+				</Offcanvas>
 			</div>
 		</div>
         
