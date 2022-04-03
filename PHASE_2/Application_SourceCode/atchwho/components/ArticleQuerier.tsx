@@ -17,7 +17,11 @@ import {Selection} from './TimeQuerier'
 import TimeQuerier from './TimeQuerier';
 
 
-export default function ArticleQuerier(locations: string[]) {
+interface Location {
+    locations: string[]
+}
+
+export default function ArticleQuerier(props: Location) {
 
     const dispatch = useAppDispatch()
 
@@ -58,16 +62,19 @@ export default function ArticleQuerier(locations: string[]) {
         if (offset === 0) {
             dispatch(clearArticles())
         }
+        console.log(props.locations)
+        console.log(Array.isArray(props.locations))
         const params = {
             start_date: dates[0].startDate.toISOString().split('.')[0],
             end_date: dates[0].endDate?.toISOString().split('.')[0],
             key_terms: queries.join(','),
-            location: locations.join(','),
+            location: props.locations.join(','),
             limit,
             offset
         }
         axios.get("https://seng3011-bobby-tables-backend.herokuapp.com/article", {params})
             .then((response: any) => {
+                console.log(response)
                 const data = response.data
                 console.log(data)
                 data.articles.forEach((articlePair: any) => {

@@ -121,8 +121,6 @@ export default function OurMap() {
 		}
 	}, [selectedCountries]);
 
-	const articleQuerierRef = React.useRef();
-
 	function fetchData(location: string) {
 		//if (articleQuerierRef.current) {
 		//	articleQuerierRef.current.doFetch(location)
@@ -134,7 +132,7 @@ export default function OurMap() {
     return (
 		<div>
 			<button onClick={() => setShowModal(true)}>Open Modal</button>
-			<button onClick={fetchData('Malawi')}>Click me</button>
+			<button onClick={() => fetchData('Malawi')}>Click me</button>
 			<Map
 				ref={mapRef}
 				initialViewState={{
@@ -142,7 +140,7 @@ export default function OurMap() {
 					longitude: -122.4,
 					zoom: 3
 				}}
-				style={{width: '100vw', height: '100vh', content: 'hidden', paddingTop: '10px'}}
+				style={{width: '100vw', height: '90vh', content: 'hidden', paddingTop: '10px'}}
 				mapStyle="mapbox://styles/mapbox/dark-v10"
 				mapboxAccessToken={MAPBOX_TOKEN}
 				onClick={onclick}
@@ -155,7 +153,7 @@ export default function OurMap() {
 			</Map>
 			<div id='modal-root'>
 				<Modal onClose={() => setShowModal(false)} show={showModal} title={"Date Selection"}>
-					<ArticleQuerier ref = {articleQuerierRef} locations={selectedCountries}/>
+					<ArticleQuerier locations={selectedCountries}/>
 				</Modal>
 			</div>
 		</div>
