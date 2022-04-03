@@ -21,7 +21,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.1.3'
+SCRAPER_VERSION = '0.1.4'
 
 
 WINDOW_SIZE = 26
@@ -359,6 +359,13 @@ class WHOScraper(CrawlSpider):
                     location_data = cache_db.locations.find_one({"queries": {"$in": [location]}})
                 else:
                     g = geocoder.google(location, key=str(os.getenv('GC_GEOCODING_API_KEY')))
+                    if g.error is not False:
+                        processed_locations.append({
+                            'location': location,
+                            'country': '',
+                            'address_components': [location]
+                        })
+                        continue
                     geodata = g.json
                     # Check if there is already a place in cache that matches the place ID of this new query
                     # So we don't waste requests in the future
