@@ -63,7 +63,7 @@ def process_reports(article):
     reports = []
     for report_dict in article['reports']:
         locations = []
-        for location_name in report_dict['locations']:
+        for location_obj in report_dict['locations']:
             location = Location(
                 country=location_obj['country'],
                 location=location_obj['location'],
