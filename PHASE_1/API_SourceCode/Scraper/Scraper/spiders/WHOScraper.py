@@ -21,7 +21,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.1.4'
+SCRAPER_VERSION = '0.1.5'
 
 
 WINDOW_SIZE = 26
@@ -361,7 +361,9 @@ class WHOScraper(CrawlSpider):
                         location_data = {
                             'location': location,
                             'country': '',
-                            'address_components': [location]
+                            'address_components': [location],
+                            'lat': None,
+                            'lng': None,
                         }
                 else:
                     g = geocoder.google(location, key=str(os.getenv('GC_GEOCODING_API_KEY')))
@@ -372,7 +374,9 @@ class WHOScraper(CrawlSpider):
                         location_data = {
                             'location': location,
                             'country': '',
-                            'address_components': [location]
+                            'address_components': [location],
+                            'lat': None,
+                            'lng': None,
                         }
                         processed_locations.append(location_data)
                         continue
@@ -411,7 +415,9 @@ class WHOScraper(CrawlSpider):
                 processed_locations.append(
                     {'location': location,
                      'country': location_data['country'],
-                     'address_components': location_data['address_components']
+                     'address_components': location_data['address_components'],
+                     'lat': location_data['lat'],
+                     'lng': location_data['lng'],
                      })
             locations = processed_locations
 

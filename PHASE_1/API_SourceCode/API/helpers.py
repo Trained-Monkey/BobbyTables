@@ -33,10 +33,12 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
         reports = []
         for report_dict in dic['reports']:
             locations = []
-            for location_name in report_dict['locations']:
+            for location_obj in report_dict['locations']:
                 location = Location(
-                    country='',
-                    location=location_name
+                    country=location_obj['country'],
+                    location=location_obj['location'],
+                    lat=location_obj['lat'],
+                    lng=location_obj['lng']
                 )
                 locations.append(location)
             report = Report(
