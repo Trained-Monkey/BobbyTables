@@ -31,7 +31,7 @@ SPECIFIC_TERMS = ['zika', 'mers', 'salmonella', 'legionnaire', 'measles', 'anthr
                   'smallpox', 'tularemia', 'junin fever', 'machupo fever', 'guanarito fever', 'chapare fever',
                   'lassa fever', 'lujo fever', 'hantavirus', 'rift valley fever',
                   'crimean congo hemorrhagic fever', 'dengue', 'ebola',
-                  'marburg']  # TODO: Add 'other related pox viruses
+                  'marburg', 'covid', 'coronavirus', 'covid-19', 'ncov19']  # TODO: Add 'other related pox viruses
 WINDOW_THRESHOLD = 3
 
 load_dotenv()
@@ -294,11 +294,11 @@ class WHOScraper(CrawlSpider):
                 if '/' in disease:
                     sub_disease_words = disease.split('/')
                     for sub_disease in sub_disease_words:
-                        if sub_disease in window_string.lower():
+                        if sub_disease in window_string.lower() or sub_disease.lower() in window_string.lower():
                             contains_disease = True
                             matched_disease_list.append(disease)
                 # Search for the whole string
-                if disease in window_string.lower():
+                if disease in window_string.lower() or disease.lower() in window_string.lower():
                     contains_disease = True
                     matched_disease_list.append(disease)
 
