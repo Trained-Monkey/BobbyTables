@@ -21,7 +21,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.1.2'
+SCRAPER_VERSION = '0.1.3'
 
 
 WINDOW_SIZE = 26
@@ -183,10 +183,12 @@ class WHOScraper(CrawlSpider):
         article_date = response.xpath("//span[contains(@class, 'timestamp')]/text()").get()
         date_object = datetime.datetime.strptime(article_date, "%d %B %Y")
         article_headline = response.xpath("//h1/text()").get().strip('\n')
-        article_reports = self.find_reports(article_html)
+        article_reports = self.find_reports(article_html.split('Public health response')[0])
         article_locations = []
         for report in article_reports:
-            article_locations += report['locations']['address_components']
+            report_locations = report['locations']
+            for report_location in report_locations:
+                article_locations += report_location['address_components']
         
         article_terms = self.find_search_terms(article_html)
         output = {
