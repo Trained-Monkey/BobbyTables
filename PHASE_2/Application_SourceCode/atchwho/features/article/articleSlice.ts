@@ -3,8 +3,10 @@ import type { RootState } from '../../app/store'
 
 // Define a type for the slice state
 interface Location {
-    country: string,
+    country: string | undefined,
     location: string,
+    lat: number | undefined,
+    lng: number | undefined
 }
 
 interface Report {
