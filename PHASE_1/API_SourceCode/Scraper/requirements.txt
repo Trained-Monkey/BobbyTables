@@ -5,3 +5,4 @@ tqdm
 pymongo[srv]
 python-dotenv
 google-cloud-language
+geocoder

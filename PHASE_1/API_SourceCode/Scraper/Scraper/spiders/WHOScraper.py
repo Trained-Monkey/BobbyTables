@@ -12,6 +12,7 @@ import pkgutil
 from dotenv import load_dotenv
 import pymongo
 import datefinder
+import geocoder
 import geograpy
 import scrapy
 import nltk
@@ -20,7 +21,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.1.0'
+SCRAPER_VERSION = '0.1.1'
 
 
 WINDOW_SIZE = 26
@@ -185,7 +186,7 @@ class WHOScraper(CrawlSpider):
         article_reports = self.find_reports(article_html)
         article_locations = []
         for report in article_reports:
-            article_locations += report['locations']
+            article_locations += report['locations']['address_components']
         
         article_terms = self.find_search_terms(article_html)
         output = {
@@ -346,8 +347,57 @@ class WHOScraper(CrawlSpider):
                                 valid_locations.append(location)
                             
             locations = valid_locations
+
+            # Process locations properly
+            processed_locations = []
+            # First, check if we have something in the cache that matches this query
+            for location in locations:
+                if cache_db.locations.count_documents({"queries": {"$in": [location]}}, limit=1) == 0:
+                    # Just fetch the cached results
+                    location_data = cache_db.locations.find_one({"queries": {"$in": [location]}})
+                else:
+                    g = geocoder.google(location, key=str(os.getenv('GC_GEOCODING_API_KEY')))
+                    geodata = g.json
+                    # Check if there is already a place in cache that matches the place ID of this new query
+                    # So we don't waste requests in the future
+                    if cache_db.locations.count_documents({"place_id": geodata['place']}, limit=1) != 0:
+                        pre_cached = cache_db.locations.find_one({"place_id": geodata['place']})
+                        pre_cached['queries'].append(location)
+                        cache_db.locations.update_one(
+                            {"place_id": geodata['place']}, {"$set": {"queries": pre_cached['queries']}})
+                        location_data = pre_cached
+                    else:
+                        # Create location_data
+                        address_components = []
+                        long_only = []
+                        for component in g.raw['address_components']:
+                            address_components.append(component['long_name'])
+                            long_only.append(component['long_name'])
+                            if component['short_name'] != component['long_name']:
+                                address_components.append(component['short_name'])
+                        location_data = {
+                            "queries": [location],
+                            "place_id": g.place,
+                            "country": g.country,
+                            "state": g.state,
+                            "county": g.county,
+                            "city": g.city,
+                            "lat": g.lat,
+                            "lng": g.lng,
+                            "address": g.address,
+                            "address_components": address_components,
+                            "long_address": ', '.join(long_only)
+                        }
+                        cache_db.locations.insert_one(location_data)
+                processed_locations.append(
+                    {'location': location,
+                     'country': location_data['country'],
+                     'address_components': location_data['address_components']
+                     })
+            locations = processed_locations
+
             if len(locations) == 0:
-                contains_location=False
+                contains_location = False
 
             report_dict = {
                 'index': int(start_window_index + (WINDOW_SIZE / 2)),
