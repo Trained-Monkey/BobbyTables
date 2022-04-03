@@ -21,7 +21,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from google.cloud import language_v1
 
-SCRAPER_VERSION = '0.1.1'
+SCRAPER_VERSION = '0.1.2'
 
 
 WINDOW_SIZE = 26
@@ -352,7 +352,7 @@ class WHOScraper(CrawlSpider):
             processed_locations = []
             # First, check if we have something in the cache that matches this query
             for location in locations:
-                if cache_db.locations.count_documents({"queries": {"$in": [location]}}, limit=1) == 0:
+                if cache_db.locations.count_documents({"queries": {"$in": [location]}}, limit=1) != 0:
                     # Just fetch the cached results
                     location_data = cache_db.locations.find_one({"queries": {"$in": [location]}})
                 else:
