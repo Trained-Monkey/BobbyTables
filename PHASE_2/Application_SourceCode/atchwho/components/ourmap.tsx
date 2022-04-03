@@ -155,7 +155,7 @@ export default function OurMap() {
 			</Map>
 			<div id='modal-root'>
 				<Modal onClose={() => setShowModal(false)} show={showModal} title={"Date Selection"}>
-					<ArticleQuerier ref = {articleQuerierRef} locations={locations}/>
+					<ArticleQuerier ref = {articleQuerierRef} locations={selectedCountries}/>
 				</Modal>
 			</div>
 		</div>
