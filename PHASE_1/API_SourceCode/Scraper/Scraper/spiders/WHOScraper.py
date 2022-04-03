@@ -142,8 +142,8 @@ class WHOScraper(CrawlSpider):
     start_urls = ['https://www.who.int/emergencies/disease-outbreak-news']
 
     rules = (
-        Rule(LinkExtractor(allow=r'/item/'), callback='parse_article'),
-        Rule(LinkExtractor(allow=r'\d+'), follow=True),  # TODO: Re-enable this once we have it works on one site
+        Rule(LinkExtractor(allow=r'/emergencies/disease-outbreak-news/item/'), callback='parse_article'),
+        Rule(LinkExtractor(allow=r'/emergencies/disease-outbreak-news/\d+'), follow=True),  # TODO: Re-enable this once we have it works on one site
 
     )
 
