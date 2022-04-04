@@ -112,7 +112,7 @@ export default function OurMap() {
 					</Offcanvas.Body>
 				</Offcanvas>
 
-				<Offcanvas show={showBottom} onHide={handleCloseBottom} placement='bottom' style={{height: 300}}>
+				<Offcanvas show={showBottom} onHide={handleCloseBottom} placement='bottom' style={{height: 400}}>
 					<Offcanvas.Header closeButton>
 					<Offcanvas.Title>Reports</Offcanvas.Title>
 					</Offcanvas.Header>
@@ -122,27 +122,25 @@ export default function OurMap() {
 						return article.reports.map((report, rIndex) => {
 							return <div style={{display: 'inline-grid'}} key={article.url + "-" + rIndex}>
 								<Card style={{ width: '18rem', margin: '10px'}}>
-									<Card.Img variant="top" src="../public/heart.png" />
-										<Card.Body>
-											<Card.Title>{article.headline}</Card.Title>
-											<Card.Text>
-												<div>
-													{article.date_of_publication}
-												</div>												
-												<a href={article.url}>Link</a>
-											</Card.Text>
-											<Button variant="primary">Button</Button>
-										</Card.Body>
+									<Card.Img variant='top' src="heart.png" style={{width: '50px', height: '50px', margin: '5px'}}/>
+									<Card.Body>
+										<Card.Title>{article.headline}</Card.Title>
+										<Card.Text>
+											<div>
+												{article.date_of_publication}
+											</div>												
+											<a href={article.url}>Link</a>
+										</Card.Text>
+										<Button variant="primary">Button</Button>
+									</Card.Body>
 								</Card>
 							</div>
-
 						})
 					})
-				}
+					}
 					</Offcanvas.Body>
 				</Offcanvas>
 			</div>
-		</div>
-        
+		</div>   
     )
 }
