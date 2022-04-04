@@ -50,9 +50,9 @@ export default function ArticleQuerier(props: Location) {
     ]
     const animatedComponents = makeAnimated();
 
-    function handleQueryChange(newValue: OnChangeValue<any, true>, actionMeta: ActionMeta<any>) {
+    function handleQueryChange(newValue: unknown, actionMeta: ActionMeta<any>) {
         const results: string[] = []
-        newValue.forEach((value) => {
+        newValue.forEach((value:any) => {
             results.push(value.value)
         })
         setQueries(results)
