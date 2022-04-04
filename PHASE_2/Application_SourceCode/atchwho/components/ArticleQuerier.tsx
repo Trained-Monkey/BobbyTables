@@ -1,85 +1,121 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 
 const axios = require('axios')
 
 import CreatableSelect from 'react-select/creatable';
 import makeAnimated from 'react-select/animated';
 import { ActionMeta, OnChangeValue } from 'react-select'
+import { Button } from 'react-bootstrap';
+
+
+import {useDispatch} from 'react-redux'
+import { useAppSelector, useAppDispatch } from '../app/hooks' 
+import { addArticle, addBulkArticles, clearArticles } from '../features/article/articleSlice'
 
 import {Selection} from './TimeQuerier'
 
 import TimeQuerier from './TimeQuerier';
 
 
-export default function ArticleQuerier() {
+interface Location {
+    locations: string[]
+}
 
-    let country: string = "Australia"
+export default function ArticleQuerier(props: Location) {
+
+    const dispatch = useAppDispatch()
 
     const defaultDateState:Selection = {
         startDate: new Date(),
-        endDate: null,
+        endDate: undefined,
         key: 'selection',
       }
-    const [dates, setDates] = useState([
-		defaultDateState
-	  ]);
+    const defaultDatesState: Selection[] = [defaultDateState]
+    const [dates, setDates] = useState(defaultDatesState);
 
     const defaultQueryState: string[] = []
     const [queries, setQueries] = useState(defaultQueryState)
 
-    const options = [
-        {value: 'Virus', label: 'Virus'},
-        {value: 'Outbreak', label: 'Outbreak'},
-        {value: 'Infection', label: 'Infection'},
-        {value: 'Fever', label: 'Fever'},
-        {value: 'Epidemic', label: 'Epidemic'},
-        {value: 'Infectious', label: 'Infectious'},
-        {value: 'Illness', label: 'Illness'},
-        {value: 'Bacteria', label: 'Bacteria'},
-        {value: 'Emerging', label: 'Emerging'},
+    interface Option {
+        readonly value: string,
+        readonly label: string
+    }
+
+    const options: readonly Option[] = [
+        {value: 'virus', label: 'Virus'},
+        {value: 'outbreak', label: 'Outbreak'},
+        {value: 'infection', label: 'Infection'},
+        {value: 'fever', label: 'Fever'},
+        {value: 'epidemic', label: 'Epidemic'},
+        {value: 'infectious', label: 'Infectious'},
+        {value: 'illness', label: 'Illness'},
+        {value: 'bacteria', label: 'Bacteria'},
+        {value: 'emerging', label: 'Emerging'},
     ]
     const animatedComponents = makeAnimated();
 
-    function handleQueryChange(newValue: OnChangeValue<any, true>, actionMeta: ActionMeta<any>) {
+    function handleQueryChange(newValue: OnChangeValue<Option, true>, actionMeta: ActionMeta<Option>) {
         const results: string[] = []
-        newValue.forEach((value) => {
-            results.push(value.label)
+        newValue.forEach((value:any) => {
+            results.push(value.value)
         })
         setQueries(results)
     }
 
-    function testFetch() {
-        const url = "https://seng3011-bobby-tables-backend.herokuapp.com/"
-        const start_date = "2019-01-01T00:00:00"
-        const end_date = "2023-01-01T00:00:00"
-        const key_terms = ""
-        const location = "Malawi"
-        const params = {
-            start_date,
-            end_date,
-            key_terms,
-            location,
-            limit: 20,
-            offset: 0,
+    function doRecursiveFetch(offset: number, limit: number = 20) {
+        if (offset === 0) {
+            dispatch(clearArticles())
         }
-        axios.get(url, params)
-                .then((response) => {
-                    console.log(response)
+        console.log(props.locations)
+        console.log(Array.isArray(props.locations))
+        const params = {
+            start_date: dates[0].startDate.toISOString().split('.')[0],
+            end_date: dates[0].endDate?.toISOString().split('.')[0],
+            key_terms: queries.join(','),
+            location: props.locations.join(','),
+            limit,
+            offset
+        }
+        axios.get("https://seng3011-bobby-tables-backend.herokuapp.com/article", {params})
+            .then((response: any) => {
+                console.log(response)
+                const data = response.data
+                console.log(data)
+                data.articles.forEach((articlePair: any) => {
+                    const response_article = articlePair.article
+                    const article = {
+                        url: response_article.url,
+                        date_of_publication: response_article.date_of_publication,
+                        headline: response_article.headline,
+                        main_text: response_article.main_text,
+                        id: articlePair.articleId,
+                        reports: response_article.reports,
+                    }
+                    dispatch(addArticle(article))
                 })
-                .catch((error) => {
-                    console.error(error)
-                })
+                if (data.max_articles >= limit) {
+                    doRecursiveFetch(limit, limit)
+                }
+            })
+            .catch((error: any) => {
+                console.error(error)
+            })
+
     }
 
-
     return (
-        <div style={{maxWidth: 740, backgroundColor: 'grey'}}>
+        <div style={{maxWidth: 575, backgroundColor: 'grey'}}>
             <TimeQuerier selections={dates} setSelections={setDates} />
-            <div style={{maxWidth: '85%', margin: 20}}>
-                <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
+            <div style={{display: 'flex', justifyContent: 'center'}}>
+                <div style={{width: '100%'}}>
+                    <CreatableSelect isMulti options={options} onChange={handleQueryChange} />
+                </div>
+                <div style={{width: '15%'}}>
+                    <Button variant="primary" onClick={() => {doRecursiveFetch(0, 20)}}>Search</Button> 
+                </div>
             </div>
-            <button onClick={testFetch}>TEST</button>
         </div>
     )
-}
+};
+

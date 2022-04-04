@@ -9,7 +9,7 @@ import 'react-date-range/dist/theme/default.css'; // theme css file
 
 export interface Selection {
 	startDate: Date,
-	endDate: Date | null,
+	endDate: Date | undefined,
 	key: string,
 }
 export interface SelectionState {
@@ -21,7 +21,7 @@ export default function TimeQuerier(props: SelectionState) {
 
 	
 	
-	const minDate = addDays(new Date(), -30); // TODO: Set this to minimum date of data
+	const minDate = addDays(new Date(), -3600); // TODO: Set this to minimum date of data
 
 	return (
 		<>
