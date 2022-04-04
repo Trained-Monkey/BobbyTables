@@ -10,7 +10,7 @@ const Modal = ({ show , onClose, children, title } : { show:any , onClose:any, c
       setIsBrowser(true);
     }, []);
   
-    const handleCloseClick = (event: MouseEvent) => {
+    const handleCloseClick = (event: React.MouseEvent) => {
       event.preventDefault();
       onClose();
     };

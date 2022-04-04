@@ -16,10 +16,12 @@ export default function Home() {
 		<html>
 		<Head>
 			<title>atchWHO</title>
-			<Script src="https://unpkg.com/react/umd/react.production.min.js" />
-			<Script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js" />  
-			<Script src="https://unpkg.com/react-bootstrap@next/dist/react-bootstrap.min.js" />
 		</Head>
+		<Script src="https://unpkg.com/react/umd/react.production.min.js" />
+		<Script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js" />  
+		<Script src="https://unpkg.com/react-bootstrap@next/dist/react-bootstrap.min.js" />
+		<Script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+		<Script src="../styles/hehe.css" />
 		<body style={{overflow: 'hidden', margin: 'auto'}}>
 			<OurMap />
 		</body>

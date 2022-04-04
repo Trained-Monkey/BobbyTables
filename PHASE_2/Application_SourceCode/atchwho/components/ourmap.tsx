@@ -31,12 +31,16 @@ export default function OurMap() {
 	const [showCanvas, setShowCanvas] = React.useState(false);
 	const [showSide, setShowSide] = React.useState(false);
 	const [showBottom, setShowBottom] = React.useState(false);
+	const [showModal, setShowModal] = React.useState(false);
 
   	const handleCloseSide = () => setShowSide(false);
   	const handleShowSide = () => setShowSide(true);
 	
 	const handleCloseBottom = () => setShowBottom(false);
   	const handleShowBottom = () => setShowBottom(true);
+
+	const handleCloseModal= () => setShowModal(false);
+  	const handleShowModal = () => setShowModal(true);
 
 	const articles = useAppSelector(state => state.articles.articles)
 	console.log(articles)
@@ -80,7 +84,7 @@ export default function OurMap() {
 					longitude: -122.4,
 					zoom: 3
 				}}
-				style={{width: '100vw', height: '90vh', content: 'hidden', paddingTop: '10px'}}
+				style={{width: '100vw', height: '100vh', content: 'hidden', paddingTop: '10px'}}
 				mapStyle="mapbox://styles/mapbox/dark-v10"
 				mapboxAccessToken={MAPBOX_TOKEN}
 				onClick={onclick}
@@ -103,7 +107,7 @@ export default function OurMap() {
 			</Map>
 
 			<div id='offCanvas-root'>
-				<Offcanvas show={showSide} onHide={handleCloseSide} style={{width: 600}}>
+				<Offcanvas show={showSide} onHide={handleCloseSide} scroll={true} backdrop={true} style={{width: 600}}>
 					<Offcanvas.Header closeButton>
 					<Offcanvas.Title>Offcanvas</Offcanvas.Title>
 					</Offcanvas.Header>
@@ -112,7 +116,7 @@ export default function OurMap() {
 					</Offcanvas.Body>
 				</Offcanvas>
 
-				<Offcanvas show={showBottom} onHide={handleCloseBottom} placement='bottom' style={{height: 400}}>
+				<Offcanvas show={showBottom} onHide={handleCloseBottom} placement='bottom' scroll={true} backdrop={false} style={{height: 400}}>
 					<Offcanvas.Header closeButton>
 					<Offcanvas.Title>Reports</Offcanvas.Title>
 					</Offcanvas.Header>
@@ -124,14 +128,15 @@ export default function OurMap() {
 								<Card style={{ width: '18rem', margin: '10px'}}>
 									<Card.Img variant='top' src="heart.png" style={{width: '50px', height: '50px', margin: '5px'}}/>
 									<Card.Body>
-										<Card.Title>{article.headline}</Card.Title>
+										<Card.Title>
+											<a href={article.url}>{article.headline}</a>
+										</Card.Title>
 										<Card.Text>
 											<div>
 												{article.date_of_publication}
-											</div>												
-											<a href={article.url}>Link</a>
+											</div>																							
 										</Card.Text>
-										<Button variant="primary">Button</Button>
+										<Button variant="btn btn-danger" onClick={handleShowModal}>Stay Updated</Button>
 									</Card.Body>
 								</Card>
 							</div>
@@ -140,6 +145,26 @@ export default function OurMap() {
 					}
 					</Offcanvas.Body>
 				</Offcanvas>
+				
+				<div id='modal-root'>
+					<Modal show={showModal} onClose={handleCloseModal} title={"Subscribe to this marker"}>
+						<div className="modal fade">
+							<div className="modal-dialog modal-dialog-centered">
+								<div className="modal-content py-md-5 px-md-4 p-sm-3 p-4">
+									<h3>Push notifications</h3> 
+									<i className="fa fa-bell"></i>
+									<p className="r3 px-md-5 px-sm-1">Recieve push notifications to be updated to latest news.</p>
+									<div className="text-center mb-3"> 
+										<Button variant="btn btn-primary w-50 rounded-pill b1">
+											Subscribe
+										</Button> 
+									</div> 
+									<a href="#">Not now</a>
+								</div>
+							</div>
+						</div>
+					</Modal>
+				</div>
 			</div>
 		</div>   
     )

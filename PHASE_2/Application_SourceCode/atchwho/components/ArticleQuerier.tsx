@@ -37,7 +37,12 @@ export default function ArticleQuerier(props: Location) {
     const defaultQueryState: string[] = []
     const [queries, setQueries] = useState(defaultQueryState)
 
-    const options = [
+    interface Option {
+        readonly value: string,
+        readonly label: string
+    }
+
+    const options: readonly Option[] = [
         {value: 'virus', label: 'Virus'},
         {value: 'outbreak', label: 'Outbreak'},
         {value: 'infection', label: 'Infection'},
@@ -50,7 +55,7 @@ export default function ArticleQuerier(props: Location) {
     ]
     const animatedComponents = makeAnimated();
 
-    function handleQueryChange(newValue: unknown, actionMeta: ActionMeta<any>) {
+    function handleQueryChange(newValue: OnChangeValue<Option, true>, actionMeta: ActionMeta<Option>) {
         const results: string[] = []
         newValue.forEach((value:any) => {
             results.push(value.value)
@@ -104,7 +109,7 @@ export default function ArticleQuerier(props: Location) {
             <TimeQuerier selections={dates} setSelections={setDates} />
             <div style={{display: 'flex', justifyContent: 'center'}}>
                 <div style={{width: '100%'}}>
-                    <CreatableSelect isMulti options={options} components={animatedComponents} onChange={handleQueryChange} />
+                    <CreatableSelect isMulti options={options} onChange={handleQueryChange} />
                 </div>
                 <div style={{width: '15%'}}>
                     <Button variant="primary" onClick={() => {doRecursiveFetch(0, 20)}}>Search</Button> 
