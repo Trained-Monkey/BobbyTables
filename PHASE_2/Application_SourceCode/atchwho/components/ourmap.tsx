@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Script from 'next/script';
 import Map, {Popup, Layer, Source, Marker} from 'react-map-gl';
-import {countriesLayer, highlightLayer} from '../pages/map-style';
+import type {FillLayer} from 'react-map-gl';
 import ArticleQuerier from './ArticleQuerier';
 import Modal from './ourmodal';
 import { stringify } from 'querystring';
@@ -66,6 +66,36 @@ export default function OurMap() {
 	}, [selectedCountries]);
 
 	const filter = React.useMemo(() => ["in", 'name_en', ...selectedCountries], [selectedCountries])
+
+	const highlightLayer: FillLayer = {
+		id: 'country_highlighted',
+		type: 'fill',
+		'source-layer': 'country_boundaries',
+		filter: [
+		  'all',
+		  ['match', ['get', 'worldview'], ['all', 'US'], true, false],
+		  ["!=", "true", ["get", "disputed"]],
+		],
+		paint: {
+			'fill-color': 'rgba(255,130,0,1)',
+		}
+	}
+
+	const countriesLayer: FillLayer = {
+		id: 'country_boundaries',
+		type: 'fill',
+		'source-layer': 'country_boundaries',
+		filter: [
+		  'all',
+		  ['match', ['get', 'worldview'], ['all', 'US'], true, false],
+		  ["!=", "true", ["get", "disputed"]],
+		],
+		paint: {
+		  'fill-outline-color': 'rgba(255,130,0,0.7)',
+		  'fill-color': 'rgba(255,130,0,0.05)'
+		}
+	}
+	
 
     return (
 		<div>
