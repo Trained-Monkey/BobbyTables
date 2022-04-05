@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Script from 'next/script';
-import Map, {Popup, Layer, Source, Marker} from 'react-map-gl';
+import {Popup, Layer, Source, Marker, MapRef, Map} from 'react-map-gl';
 import type {FillLayer} from 'react-map-gl';
 import ArticleQuerier from './ArticleQuerier';
 import Modal from './ourmodal';
@@ -8,18 +8,13 @@ import { stringify } from 'querystring';
 import { useCallback } from 'react';
 import { Button, Card, Offcanvas } from 'react-bootstrap';
 import { Fab, Action } from 'react-tiny-fab';
-import 'react-tiny-fab/dist/styles.css';
 import { useAppSelector, useAppDispatch } from '../app/hooks' 
-
-import type {MapRef} from 'react-map-gl';
+import 'react-tiny-fab/dist/styles.css';
 import { features } from 'process';
 
 export default function OurMap() {
 
     const MAPBOX_TOKEN = 'pk.eyJ1IjoicG9pYm9pIiwiYSI6ImNsMTYwaTZuazAxOHMzaXFzdjkzZW4wNm8ifQ.MH9qcxmXZcPGKoMdz_eUvg'; // Set your mapbox token here
-
-    const default_info = {longitude: -120, latitude: 40, countryName: "Australia"}
-	
 	//var default_info = null;
 	const mapRef = React.useRef<MapRef>(null);
 	const [vis, setVis] = React.useState(true);
@@ -42,7 +37,7 @@ export default function OurMap() {
   	const handleShowModal = () => setShowModal(true);
 
 	const articles = useAppSelector(state => state.articles.articles)
-	console.log(articles)
+	//console.log(articles)
 	
 	const onclick = useCallback(event => {
 		const {
@@ -96,6 +91,10 @@ export default function OurMap() {
 		}
 	}
 	
+	function multiFunc(locations: any) {
+		mapRef.current?.flyTo({center: [parseInt(locations[0].lng), parseInt(locations[0].lat)], zoom: 6})
+		handleShowModal();
+	}
 
     return (
 		<div>
@@ -112,20 +111,20 @@ export default function OurMap() {
 				onClick={onclick}
                 interactiveLayerIds={['country_boundaries']}				
 			>	
-			<button onClick={() => setVis(!vis)}>{vis ? "remove" : "add"}</button>
-			<Fab alwaysShowTitle={true} icon="ℹ️">
-				<Action text="Search" onClick={showSide ? handleCloseSide : handleShowSide}>
-					🔎
-				</Action>
-				{vis && (
-				<Action text="Reports" onClick={showBottom ? handleCloseBottom : handleShowBottom}>
-					📋
-				</Action>
-				)}
-				<Action text="Clear Countries" onClick={() => setSelectedCountries([])}>
-					🚫
-				</Action>
-			</Fab>
+				<button onClick={() => setVis(!vis)}>{vis ? "remove" : "add"}</button>
+				<Fab alwaysShowTitle={true} icon="ℹ️">
+					<Action text="Search" onClick={showSide ? handleCloseSide : handleShowSide}>
+						🔎
+					</Action>
+					{vis && (
+					<Action text="Reports" onClick={showBottom ? handleCloseBottom : handleShowBottom}>
+						📋
+					</Action>
+					)}
+					<Action text="Clear Countries" onClick={() => setSelectedCountries([])}>
+						🚫
+					</Action>
+				</Fab>
 
                 <Source type="vector" url="mapbox://mapbox.country-boundaries-v1">
                     <Layer beforeId="waterway-label" {...countriesLayer} />
@@ -135,8 +134,7 @@ export default function OurMap() {
 					articles.map((article, aIndex) => {
 						return article.reports.map((report, rIndex) => {
 							return report.locations.map((location, lIndex) => {
-								console.log(location)
-								return <Marker latitude={location.lat} longitude={location.lng} key={article.url + "-" + rIndex + "-" + lIndex}/>
+								return <Marker latitude={location.lat} longitude={location.lng} key={article.url + "-" + rIndex + "-" + lIndex}/>		
 							})
 						})
 					})
@@ -177,7 +175,7 @@ export default function OurMap() {
 											</div>																			
 												Syndromes: {report.syndromes.length == 0 ? "None" : report.syndromes}
 										</Card.Text>
-										<Button variant="btn btn-danger" onClick={handleShowModal}>Stay Updated</Button>
+										<Button variant="btn btn-danger" onClick={(event) => multiFunc(report.locations)} value={article.headline}>Stay Updated</Button>
 									</Card.Body>
 								</Card>
 							</div>
@@ -189,7 +187,7 @@ export default function OurMap() {
 				
 				<div id='modal-root'>
 					<Modal show={showModal} onClose={handleCloseModal} title={"Subscribe to this marker"}>
-						
+
 					</Modal>
 				</div>
 			</div>

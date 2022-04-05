@@ -20,10 +20,14 @@ const Modal = ({ show , onClose, children, title } : { show:any , onClose:any, c
       <StyledModalOverlay>
         <StyledModal>
           <StyledModalHeader>
-            {title}
-            <a href="#" onClick={handleCloseClick}>
-              x
-            </a>
+            <div>
+              {title}
+            </div>
+            <div style={{right: '0px'}}>
+              <a href="#" onClick={handleCloseClick}>
+                x
+              </a>
+            </div>
           </StyledModalHeader>
           <StyledModalBody>
             <Button variant="btn btn-primary w-50 rounded-pill b1">
@@ -44,6 +48,8 @@ const Modal = ({ show , onClose, children, title } : { show:any , onClose:any, c
 const StyledModalBody = styled.div`
     padding: 1em;
     border-radius: 25px;
+    display: flex;
+    justify-content: center;
 `;
 
 const StyledModalTitle = styled.div`
@@ -52,16 +58,18 @@ const StyledModalTitle = styled.div`
 
 const StyledModalHeader = styled.div`
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-around;
+    width: 120%;
     font-size: 25px;
 `;
 
 const StyledModal = styled.div`
     display: grid;
     justify-content: center;
-    background: #c2c2c2;
-    width: 650px;
-    height: 60%px;
+    border: 2px solid rgba(255,130,0,1); 
+    background: rgba(255,255,255,0.7);
+    width: 30%;
+    height: 20%;
     border-radius: 5px;
     padding: 5px;
 `;
