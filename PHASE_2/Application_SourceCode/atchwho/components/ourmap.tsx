@@ -1,15 +1,14 @@
 import * as React from 'react';
 import Script from 'next/script';
 import Map, {Popup, Layer, Source, Marker} from 'react-map-gl';
-import {countriesLayer, highlightLayer} from '../pages/map-style';
+import type {FillLayer} from 'react-map-gl';
 import ArticleQuerier from './ArticleQuerier';
 import Modal from './ourmodal';
 import { stringify } from 'querystring';
 import { useCallback } from 'react';
-import { OffCanvas } from 'react-offcanvas';
-import { Button } from 'react-bootstrap';
-import { Card } from 'react-bootstrap';
-import { Offcanvas } from 'react-bootstrap';
+import { Button, Card, Offcanvas } from 'react-bootstrap';
+import { Fab, Action } from 'react-tiny-fab';
+import 'react-tiny-fab/dist/styles.css';
 import { useAppSelector, useAppDispatch } from '../app/hooks' 
 
 import type {MapRef} from 'react-map-gl';
@@ -23,7 +22,7 @@ export default function OurMap() {
 	
 	//var default_info = null;
 	const mapRef = React.useRef<MapRef>(null);
-	const [clickInfo, setClickInfo] = React.useState(default_info);
+	const [vis, setVis] = React.useState(true);
   
 	const defaultSelCount: string[] = []
 	const [selectedCountries, setSelectedCountries] = React.useState(defaultSelCount);
@@ -44,11 +43,6 @@ export default function OurMap() {
 
 	const articles = useAppSelector(state => state.articles.articles)
 	console.log(articles)
-
-	function test() {
-        var a = mapRef.current?.getStyle().layers
-		console.log(a)
-    }
 	
 	const onclick = useCallback(event => {
 		const {
@@ -73,10 +67,38 @@ export default function OurMap() {
 
 	const filter = React.useMemo(() => ["in", 'name_en', ...selectedCountries], [selectedCountries])
 
+	const highlightLayer: FillLayer = {
+		id: 'country_highlighted',
+		type: 'fill',
+		'source-layer': 'country_boundaries',
+		filter: [
+		  'all',
+		  ['match', ['get', 'worldview'], ['all', 'US'], true, false],
+		  ["!=", "true", ["get", "disputed"]],
+		],
+		paint: {
+			'fill-color': 'rgba(255,130,0,1)',
+		}
+	}
+
+	const countriesLayer: FillLayer = {
+		id: 'country_boundaries',
+		type: 'fill',
+		'source-layer': 'country_boundaries',
+		filter: [
+		  'all',
+		  ['match', ['get', 'worldview'], ['all', 'US'], true, false],
+		  ["!=", "true", ["get", "disputed"]],
+		],
+		paint: {
+		  'fill-outline-color': 'rgba(255,130,0,0.7)',
+		  'fill-color': 'rgba(255,130,0,0.05)'
+		}
+	}
+	
+
     return (
 		<div>
-			<Button variant="primary" onClick={handleShowSide}>SIDE</ Button>
-			<Button variant="primary" onClick={handleShowBottom}>BOTTOM</ Button>
 			<Map
 				ref={mapRef}
 				initialViewState={{
@@ -89,7 +111,22 @@ export default function OurMap() {
 				mapboxAccessToken={MAPBOX_TOKEN}
 				onClick={onclick}
                 interactiveLayerIds={['country_boundaries']}				
-			>
+			>	
+			<button onClick={() => setVis(!vis)}>{vis ? "remove" : "add"}</button>
+			<Fab alwaysShowTitle={true} icon="ℹ️">
+				<Action text="Search" onClick={showSide ? handleCloseSide : handleShowSide}>
+					🔎
+				</Action>
+				{vis && (
+				<Action text="Reports" onClick={showBottom ? handleCloseBottom : handleShowBottom}>
+					📋
+				</Action>
+				)}
+				<Action text="Clear Countries" onClick={() => setSelectedCountries([])}>
+					🚫
+				</Action>
+			</Fab>
+
                 <Source type="vector" url="mapbox://mapbox.country-boundaries-v1">
                     <Layer beforeId="waterway-label" {...countriesLayer} />
 					<Layer beforeId="waterway-label" {...highlightLayer} filter={filter}/>
@@ -107,7 +144,7 @@ export default function OurMap() {
 			</Map>
 
 			<div id='offCanvas-root'>
-				<Offcanvas show={showSide} onHide={handleCloseSide} scroll={true} backdrop={true} style={{width: 600}}>
+				<Offcanvas show={showSide} onHide={handleCloseSide} scroll={true} backdrop={false} style={{width: 600}}>
 					<Offcanvas.Header closeButton>
 					<Offcanvas.Title>Offcanvas</Offcanvas.Title>
 					</Offcanvas.Header>
@@ -126,15 +163,19 @@ export default function OurMap() {
 						return article.reports.map((report, rIndex) => {
 							return <div style={{display: 'inline-grid'}} key={article.url + "-" + rIndex}>
 								<Card style={{ width: '18rem', margin: '10px'}}>
-									<Card.Img variant='top' src="heart.png" style={{width: '50px', height: '50px', margin: '5px'}}/>
 									<Card.Body>
-										<Card.Title>
-											<a href={article.url}>{article.headline}</a>
-										</Card.Title>
+										<div style={{display: 'flex', justifyContent: 'flex-start'}}>
+											<Card.Img variant='top' src="heart.png" style={{width: '30px', height: '30px', margin: '10px'}}/>
+											<Card.Title>
+												<a href={article.url}>{article.headline}</a>
+											</Card.Title>
+										</div>
 										<Card.Text>
+												Date: {article.date_of_publication}			
 											<div>
-												{article.date_of_publication}
-											</div>																							
+												Diseases: {report.diseases.length == 0 ? "None" : report.diseases}
+											</div>																			
+												Syndromes: {report.syndromes.length == 0 ? "None" : report.syndromes}
 										</Card.Text>
 										<Button variant="btn btn-danger" onClick={handleShowModal}>Stay Updated</Button>
 									</Card.Body>
@@ -148,24 +189,11 @@ export default function OurMap() {
 				
 				<div id='modal-root'>
 					<Modal show={showModal} onClose={handleCloseModal} title={"Subscribe to this marker"}>
-						<div className="modal fade">
-							<div className="modal-dialog modal-dialog-centered">
-								<div className="modal-content py-md-5 px-md-4 p-sm-3 p-4">
-									<h3>Push notifications</h3> 
-									<i className="fa fa-bell"></i>
-									<p className="r3 px-md-5 px-sm-1">Recieve push notifications to be updated to latest news.</p>
-									<div className="text-center mb-3"> 
-										<Button variant="btn btn-primary w-50 rounded-pill b1">
-											Subscribe
-										</Button> 
-									</div> 
-									<a href="#">Not now</a>
-								</div>
-							</div>
-						</div>
+						
 					</Modal>
 				</div>
 			</div>
 		</div>   
     )
 }
+
