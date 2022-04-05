@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { Button } from 'react-bootstrap';
 import styled from "styled-components";
 
 
@@ -19,12 +20,16 @@ const Modal = ({ show , onClose, children, title } : { show:any , onClose:any, c
       <StyledModalOverlay>
         <StyledModal>
           <StyledModalHeader>
+            {title}
             <a href="#" onClick={handleCloseClick}>
               x
             </a>
           </StyledModalHeader>
-          {title && <StyledModalTitle>{title}</StyledModalTitle>}
-          <StyledModalBody>{children}</StyledModalBody>
+          <StyledModalBody>
+            <Button variant="btn btn-primary w-50 rounded-pill b1">
+              Subscribe
+            </Button>
+          </StyledModalBody>
         </StyledModal>
       </StyledModalOverlay>
     ) : null;
@@ -56,7 +61,7 @@ const StyledModal = styled.div`
     justify-content: center;
     background: #c2c2c2;
     width: 650px;
-    height: 600px;
+    height: 60%px;
     border-radius: 5px;
     padding: 5px;
 `;
@@ -66,7 +71,7 @@ const StyledModalOverlay = styled.div`
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 600px;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -31,33 +31,3 @@ body {
   overflow: hidden;
   height: 400px;
   }
-
-  .modal-content {
-    border-radius: 1rem
-}
-
-.modal-content:hover {
-    box-shadow: 2px 2px 2px black
-}
-
-.fa {
-    color: #2b84be;
-    font-size: 90px;
-    padding: 30px 0px
-}
-
-.b1 {
-    background-color: #2b84be;
-    box-shadow: 0px 4px #337095;
-    font-size: 17px
-}
-
-.r3 {
-    color: #c1c1c1;
-    font-weight: 500
-}
-
-a,
-a:hover {
-    text-decoration: none
-}
