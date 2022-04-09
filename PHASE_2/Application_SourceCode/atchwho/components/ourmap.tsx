@@ -1,40 +1,47 @@
 import * as React from 'react';
-import Script from 'next/script';
 import {Popup, Layer, Source, Marker, MapRef, Map} from 'react-map-gl';
 import type {FillLayer} from 'react-map-gl';
 import ArticleQuerier from './ArticleQuerier';
 import Modal from './ourmodal';
-import { stringify } from 'querystring';
 import { useCallback } from 'react';
 import { Button, Card, Offcanvas } from 'react-bootstrap';
 import { Fab, Action } from 'react-tiny-fab';
+import { TwitterTimelineEmbed, TwitterTweetEmbed} from 'react-twitter-embed';
 import { useAppSelector, useAppDispatch } from '../app/hooks' 
 import 'react-tiny-fab/dist/styles.css';
-import { features } from 'process';
 
 export default function OurMap() {
 
     const MAPBOX_TOKEN = 'pk.eyJ1IjoicG9pYm9pIiwiYSI6ImNsMTYwaTZuazAxOHMzaXFzdjkzZW4wNm8ifQ.MH9qcxmXZcPGKoMdz_eUvg'; // Set your mapbox token here
-	//var default_info = null;
 	const mapRef = React.useRef<MapRef>(null);
 	const [vis, setVis] = React.useState(true);
+	const [vis1, setVis1] = React.useState(true);
   
 	const defaultSelCount: string[] = []
 	const [selectedCountries, setSelectedCountries] = React.useState(defaultSelCount);
-
-	const [showCanvas, setShowCanvas] = React.useState(false);
 	const [showSide, setShowSide] = React.useState(false);
+	const [showSide1, setShowSide1] = React.useState(false);
 	const [showBottom, setShowBottom] = React.useState(false);
 	const [showModal, setShowModal] = React.useState(false);
 
   	const handleCloseSide = () => setShowSide(false);
   	const handleShowSide = () => setShowSide(true);
+
+	const handleCloseSide1 = () => setShowSide1(false);
+  	const handleShowSide1 = () => setShowSide1(true);
 	
 	const handleCloseBottom = () => setShowBottom(false);
   	const handleShowBottom = () => setShowBottom(true);
 
 	const handleCloseModal= () => setShowModal(false);
   	const handleShowModal = () => setShowModal(true);
+
+	const asia = ['Sri Lanka', 'Kazakhstan', 'Tajikistan', 'Uzbekistan', 'Kyrgyzstan', 'Turkmenistan', 'Afghanistan', 'Pakistan', 'Azerbaijan', 'Armenia', 'Georgia', 'Turkey', 'Iraq', 'Iran', 'Syria', 'Jordan', 'Israel', 'Saudi Arabia', 'Oman', 'Yemen', 'Malaysia', 'Nepal', 'Bangladesh', 'India', 'Mongolia', 'South Korea', 'North Korea', 'Japan', 'China', 'Taiwan', 'Laos', 'Myanmar', 'Thailand', 'Cambodia', 'Vietnam', 'Philippines', 'Indonesia']
+	const africa = ['Saint Helena, Ascension and Tristan da Cunha', 'Portugal', 'Spain', 'Cape Verde', 'Heard and McDonald Islands', 'French Southern and Antarctic Lands', 'Mayotte', 'Comoros', 'Mauritius', 'Reunion', 'Eswatini', 'Rwanda', 'Burundi', 'Malawi', 'Equatorial Guinea', 'Republic of the Congo', 'Gabon', 'Djibouti', 'Eritrea', 'Guinea-Bissau', 'Gambia', 'Benin', 'Togo', 'Ghana', 'Burkina Faso', 'Ivory Coast', 'Liberia', 'Sierra Leone', 'Guinea', 'Senegal', 'Mauritania', 'Mali', 'Morocco', 'Western Sahara', 'Egypt', 'Libya', 'Algeria', 'Niger', 'Nigeria', 'Cameroon', 'Chad', 'Central African Republic', 'Democratic Republic of the Congo', 'South Sudan', 'Sudan', 'Ethiopia', 'Somalia', 'Kenya', 'Uganda', 'Tanzania', 'Angola', 'Zambia', 'Zimbabwe', 'Mozambique', 'Lesotho', 'Botswana', 'Namibia', 'South Africa', 'Madagascar']
+	const nAmerica = ['Turks and Caicos Islands', 'Bahamas', 'Trinidad and Tobago', 'Grenada', 'Barbados', 'Saint Vincent and the Grenadines', 'Saint Lucia', 'Martinique', 'Dominica', 'Guadeloupe', 'Virgin Islands', 'Puerto Rico', 'Jamaica', 'Haiti', 'Dominican Republic', 'Cuba', 'Honduras', 'El Salvador', 'Belize', 'Guatemala', 'Nicaragua', 'Panama', 'Costa Rica', 'Greenland', 'United States', 'Mexico', 'Canada']
+	const sAmerica = ['French Guiana', 'Suriname', 'Guyana', 'Venezuela', 'Colombia', 'Peru', 'Ecuador', 'Bolivia', 'Paraguay', 'Brazil', 'Uruguay', 'South Georgia and South Sandwich Islands', 'Falkland Islands (Islas Malvinas)', 'Argentina', 'Chile']
+	const europe = ['Montenegro', 'Serbia', 'Albania', 'Bosnia and Herzegovina', 'Croatia', 'Slovenia', 'Hungary', 'Slovakia', 'Czechia', 'Austria', 'Switzerland', 'Italy', 'France', 'Netherlands', 'Belgium', 'Denmark', 'Germany', 'Poland', 'Lithuania', 'Estonia', 'Latvia', 'Belarus', 'Ukraine', 'Moldova', 'Romania', 'North Macedonia', 'Kosovo', 'Bulgaria', 'Greece', 'Russia', 'Finland', 'Sweden', 'Norway', 'Iceland', 'Ireland', 'United Kingdom', 'Spain', 'Portugal']
+	const oceania = ['US Minor Outlying Islands', 'Marshall Islands', 'Federated States of Micronesia', 'Kiribati', 'Tuvalu', 'Niue', 'Tonga', 'Fiji', 'Solomon Islands', 'Vanuatu', 'New Caledonia', 'Papua New Guinea', 'New Zealand', 'Australia']
 
 	const articles = useAppSelector(state => state.articles.articles)
 	//console.log(articles)
@@ -113,17 +120,62 @@ export default function OurMap() {
 			>	
 				<button onClick={() => setVis(!vis)}>{vis ? "remove" : "add"}</button>
 				<Fab alwaysShowTitle={true} icon="ℹ️">
+					{vis && (
 					<Action text="Search" onClick={showSide ? handleCloseSide : handleShowSide}>
 						🔎
 					</Action>
+					)}
 					{vis && (
 					<Action text="Reports" onClick={showBottom ? handleCloseBottom : handleShowBottom}>
 						📋
 					</Action>
 					)}
+					{vis && (
+					<Action text="Twitter" onClick={showSide1 ? handleCloseSide1 : handleShowSide1}>
+						🕊️
+					</Action>
+					)}
+					{vis && (
 					<Action text="Clear Countries" onClick={() => setSelectedCountries([])}>
 						🚫
 					</Action>
+					)}
+				</Fab>
+
+				<button onClick={() => setVis1(!vis1)}>
+					{vis1 ? "remove" : "add"}
+				</button>
+				<Fab style={{right: '105px', bottom: '24px'}} alwaysShowTitle={true} icon="🌎">
+					{vis1 && (
+					<Action text="Oceania" onClick={() => setSelectedCountries(oceania)}>
+						📍
+					</Action>
+					)}
+					{vis1 && (
+					<Action text="Europe" onClick={() => setSelectedCountries(selectedCountries.concat(europe))}>
+						📍
+					</Action>
+					)}
+					{vis1 && (
+					<Action text="S. America" onClick={() => setSelectedCountries(selectedCountries.concat(sAmerica))}>
+						📍
+					</Action>
+					)}
+					{vis1 && (
+					<Action text="N. America" onClick={() => setSelectedCountries(selectedCountries.concat(nAmerica))}>
+						📍
+					</Action>
+					)}
+					{vis1 && (
+					<Action text="Africa" onClick={() => setSelectedCountries(selectedCountries.concat(africa))}>
+						📍
+					</Action>
+					)}
+					{vis1 && (
+					<Action text="Asia" onClick={() => setSelectedCountries(selectedCountries.concat(asia))}>
+						📍
+					</Action>
+					)}
 				</Fab>
 
                 <Source type="vector" url="mapbox://mapbox.country-boundaries-v1">
@@ -144,10 +196,23 @@ export default function OurMap() {
 			<div id='offCanvas-root'>
 				<Offcanvas show={showSide} onHide={handleCloseSide} scroll={true} backdrop={false} style={{width: 600}}>
 					<Offcanvas.Header closeButton>
-					<Offcanvas.Title>Offcanvas</Offcanvas.Title>
+					<Offcanvas.Title>Search</Offcanvas.Title>
 					</Offcanvas.Header>
 					<Offcanvas.Body  style={{width: 600}}>
 						<ArticleQuerier locations={selectedCountries}/>
+					</Offcanvas.Body>
+				</Offcanvas>
+
+				<Offcanvas show={showSide1} onHide={handleCloseSide1} scroll={true} backdrop={false} style={{width: 600}}>
+					<Offcanvas.Header closeButton>
+					<Offcanvas.Title>Twitter</Offcanvas.Title>
+					</Offcanvas.Header>
+					<Offcanvas.Body  style={{width: 600}}>
+						<TwitterTimelineEmbed
+							sourceType="profile"
+							screenName="CDCgov"
+							options={{height: 800}}
+							/>
 					</Offcanvas.Body>
 				</Offcanvas>
 
