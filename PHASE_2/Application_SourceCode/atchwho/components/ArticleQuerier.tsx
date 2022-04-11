@@ -107,12 +107,12 @@ export default function ArticleQuerier(props: Location) {
     return (
         <div style={{maxWidth: 575, backgroundColor: 'grey'}}>
             <TimeQuerier selections={dates} setSelections={setDates} />
-            <div style={{display: 'flex', justifyContent: 'center'}}>
+            <div style={{display: 'flex', justifyContent: 'center', paddingTop: '10px', backgroundColor: 'white'}}>
                 <div style={{width: '100%'}}>
                     <CreatableSelect isMulti options={options} onChange={handleQueryChange} />
                 </div>
-                <div style={{width: '15%'}}>
-                    <Button variant="primary" onClick={() => {doRecursiveFetch(0, 20)}}>Search</Button> 
+                <div style={{width: '15%', backgroundColor: 'white'}}>
+                    <Button variant="primary rounded-pill b1" onClick={() => {doRecursiveFetch(0, 20)}}>Search</Button> 
                 </div>
             </div>
         </div>
