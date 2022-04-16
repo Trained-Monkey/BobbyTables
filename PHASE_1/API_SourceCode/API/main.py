@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
+from Notifier.Notifier import Notifier
 # from fastapi import exception_handler
 import json
 
@@ -51,6 +52,15 @@ async def missing_parameters(request, exception):
     return JSONResponse({
         "error_message": "Bad request"
     }, status_code = 400)
+
+email_notifier = Notifier()
+@app.on_event("startup")
+async def startup_event():
+    email_notifier.start()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    email_notifier.end()
     
 """
 Routes set up according to stoplight documentation
