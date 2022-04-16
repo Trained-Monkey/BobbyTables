@@ -19,7 +19,7 @@ import jinja2
 import pymongo
 
 sys.path.insert(1, os.path.join(os.path.dirname(__file__), '..','..', '..', 'API_SourceCode', 'API'))
-from helpers import get_articles_within_time
+from helpers import get_articles_within_time, get_subscribed
 
 
 class Notifier():
@@ -35,43 +35,56 @@ class Notifier():
         self.thread = Thread(target=self.check_updates)
         self.thread.daemon = True
 
-        self.email_dict
+        # self.email_dict
 
     def get_new_articles(self):
-        # end_date = datetime.datetime.now()
+        end_date = datetime.datetime.now()
+        # Uncomment the line below to get actual data
         end_date = datetime.datetime(2022, 3, 3, 10, 10)
         start_date = end_date - datetime.timedelta(days=1)
 
-
         (result, _, count, locations) = get_articles_within_time(end_date, start_date)
 
-        return result, locations
+        return locations
 
     def check_updates(self):
         while not self.e.isSet():
-            articles, locations = self.get_new_articles()
+            articles = self.get_new_articles()
             new_articles_found = len(articles) > 0
 
+            # Dict of users we're going to notify about this
+            to_be_notified = dict()
+
             if (new_articles_found):
-                for article in articles:
-                    pass
+                for location_pair in articles:
+                    locations = location_pair[0]
+                    article = location_pair[1]
 
-                subscribers = self.get_subscribers(locations)
-                self.notify_subscribers(subscribers)
+                    subscribers = self.get_subscribers(locations)
 
-            self.e.wait(60)
+                    for subscriber in subscribers:
+                        articles_sent = to_be_notified.get(subscriber, [])
+                        articles_sent.append(article)
+                        to_be_notified[subscriber] = articles_sent
+
+                self.notify_subscribers(to_be_notified)
+
+            # Wait a whole day
+            # seconds * minutes * hours
+            self.e.wait(60 * 60 * 24)
 
     def get_subscribers(self, locations):
         print("Getting subscribers")
-        return ['michael.chen0@icloud.com']
+
+        return get_subscribed(locations)
 
     def notify_subscribers(self, subscribers):
         self.session = smtplib.SMTP('smtp.gmail.com', 587) 
         self.session.starttls() 
         self.session.login(self.sender_address, self.sender_pass)
 
-        for subscriber in subscribers:
-            self.send_email(subscriber)
+        for subscriber in subscribers.keys():
+            self.send_email(subscriber, subscribers[subscriber])
 
         self.session.quit()
 
@@ -79,7 +92,6 @@ class Notifier():
         self.thread.start()
 
     def end(self):
-        print("Terminating")
         self.e.set()
 
     def send_email(self, receiver_address, articles=[{'location':'Sydney', 'title':'Sydney is xyz'}]):                
@@ -88,7 +100,7 @@ class Notifier():
         message['To'] = receiver_address
         message['Subject'] = 'Pandemic article notification'   #The subject line
 
-        file_loader = FileSystemLoader('templates')
+        file_loader = FileSystemLoader('Notifier/templates')
         env = Environment(loader=file_loader)   
         template = env.get_template('email_format.html')
 
@@ -99,19 +111,14 @@ class Notifier():
         self.session.sendmail(self.sender_address, receiver_address, text)
 
     def __del__(self):
-        print("Destructor called shutting down")
         if (self.thread.is_alive()):
             self.end()
-            self.thread.join()
-            print("Successfully joined")
 
 def main():
     x = Notifier()
-    # x.start()
-    # x.check_updates()
-    x.get_new_articles()
-    print("Running async")
-    # time.sleep(120)
+    x.start()
+    time.sleep(120)
+    x.end()
 
 if __name__ == "__main__":
     main()

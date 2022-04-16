@@ -11,8 +11,8 @@
             <div>
                 {% for article in articles %}
                 <div style="border-color: rgb(0, 0, 17);border-style: solid;border-radius: 10px;margin: 10px;padding: 5px;">
-                    <p><strong> {{article.location}} </strong></p>
-                    <p> {{ article.title }}  </p>
+                    <p><strong> {{article.date_of_publication}} </strong></p>
+                    <p> {{ article.headline }}  </p>
                 </div>
                 {% endfor %}
             </div>

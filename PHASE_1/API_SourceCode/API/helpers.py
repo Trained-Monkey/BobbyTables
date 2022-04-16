@@ -29,6 +29,19 @@ def set_db(new_db = None):
         latest_scraper_version = "0.0.9"
         db = new_db
 
+def get_subscribed(locations):
+    results = []
+    
+    query = {
+        'locations' : {"$in": locations}
+    }
+
+    cursor = db.subscribers.find(query)
+    for dic in cursor:
+        results.append(dic['email'])
+
+    return results
+
 def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, locations: list, limit: int = 20,
                     offset: int = 0):
     query = {
@@ -69,11 +82,8 @@ def get_articles_within_time(end_date: datetime, start_date: datetime):
     
     articles = []
     ids = []
-    locations = set()
+    locations = []
     for dic in cursor:
-        for location in dic['locations']:
-            locations.add(location)
-
         reports = process_reports(dic)
         article = Article(
             url=dic['url'],
@@ -82,8 +92,11 @@ def get_articles_within_time(end_date: datetime, start_date: datetime):
             main_text=dic['main_text'],
             reports=reports
         )
+
+        locations.append((dic['locations'], article))
         articles.append(article)
         ids.append(dic['id'])
+
     max_amount = db.articles.count_documents(query)
     return articles, ids, max_amount, locations
 
