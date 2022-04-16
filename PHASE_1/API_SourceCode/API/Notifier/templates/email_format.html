@@ -1,0 +1,21 @@
+<html >
+    <head>
+
+    </head>
+    <body style="margin: 0;">
+        <div style="height: 80px; width: 100%; background-color:rgb(0, 0, 17);">
+            <h1 style="color: azure; text-align: center; padding-top: 20px"> Bobby Tables Atcwho Notification</h1>
+        </div>
+        <div>
+            <p style="text-align: center;"> We received a new article for a country you've subscribed to </p>
+            <div>
+                {% for article in articles %}
+                <div style="border-color: rgb(0, 0, 17);border-style: solid;border-radius: 10px;margin: 10px;padding: 5px;">
+                    <p><strong> {{article.location}} </strong></p>
+                    <p> {{ article.title }}  </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+</html>
