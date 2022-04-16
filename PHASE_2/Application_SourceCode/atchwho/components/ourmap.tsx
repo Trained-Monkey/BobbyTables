@@ -8,6 +8,7 @@ import { Button, Card, Offcanvas } from 'react-bootstrap';
 import { Fab, Action } from 'react-tiny-fab';
 import { TwitterTimelineEmbed, TwitterTweetEmbed} from 'react-twitter-embed';
 import { useAppSelector, useAppDispatch } from '../app/hooks' 
+import {clearArticles } from '../features/article/articleSlice'
 import 'react-tiny-fab/dist/styles.css';
 
 export default function OurMap() {
@@ -17,6 +18,8 @@ export default function OurMap() {
 	const [vis, setVis] = React.useState(true);
 	const [vis1, setVis1] = React.useState(true);
   
+	const dispatch = useAppDispatch();
+
 	const defaultSelCount: string[] = []
 	const [selectedCountries, setSelectedCountries] = React.useState(defaultSelCount);
 	const [showSide, setShowSide] = React.useState(false);
@@ -137,6 +140,11 @@ export default function OurMap() {
 					)}
 					{vis && (
 					<Action text="Clear Countries" onClick={() => setSelectedCountries([])}>
+						🚫
+					</Action>
+					)}
+					{vis && (
+					<Action text="Clear" onClick={() => dispatch(clearArticles())}>
 						🚫
 					</Action>
 					)}
