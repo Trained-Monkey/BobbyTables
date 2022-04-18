@@ -5,12 +5,13 @@ const axios = require('axios')
 
 
 
-export default function SubscriberQuerier({ countries, setCountries }) {
+export default function SubscriberQuerier({countries, setCountries} : { countries:any, setCountries:any}) {
     const [email, setEmail] = React.useState("");
     const [content, setContent] = React.useState("");
     const [addVis, setAddVis] = React.useState(false);
     const [updVis, setUpdVis] = React.useState(false);
     const [remVis, setRemVis] = React.useState(false);
+    
 
     function hideAll(){
         setUpdVis(false);
