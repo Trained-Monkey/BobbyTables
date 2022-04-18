@@ -50,6 +50,7 @@ app = FastAPI(openapi_tags=tags_metadata)
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "https://seng3011-bobby-tables-backend.herokuapp.com/",
 ]
 
 app.add_middleware(

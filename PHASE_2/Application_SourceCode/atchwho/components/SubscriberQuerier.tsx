@@ -3,9 +3,8 @@ import { useState, forwardRef } from 'react';
 
 const axios = require('axios')
 
-
-
 export default function SubscriberQuerier({countries, setCountries} : { countries:any, setCountries:any}) {
+    const url = "https://seng3011-bobby-tables-backend.herokuapp.com/";
     const [email, setEmail] = React.useState("");
     const [content, setContent] = React.useState("");
     const [addVis, setAddVis] = React.useState(false);
@@ -30,7 +29,7 @@ export default function SubscriberQuerier({countries, setCountries} : { countrie
             email: email
         }
 
-        axios.get("http://127.0.0.1:8000/subscriber", { params })
+        axios.get(url + "/subscriber", { params })
             .then((response: any) => {
                 setCountries(response.data.locations);
                 hideAll();
@@ -54,7 +53,7 @@ export default function SubscriberQuerier({countries, setCountries} : { countrie
             location: countries.join(',')
         }
 
-        axios.patch("http://127.0.0.1:8000/subscriber", null, { params })
+        axios.patch(url + "/subscriber", null, { params })
             .then((response: any) => {
                 setContent("Subscriber has been updated")
             })
@@ -69,7 +68,7 @@ export default function SubscriberQuerier({countries, setCountries} : { countrie
             email: email
         }
 
-        axios.delete("http://127.0.0.1:8000/subscriber", { params })
+        axios.delete(url + "/subscriber", { params })
             .then((response: any) => {
                 setContent("Subscriber has been removed")
                 hideAll();
@@ -87,7 +86,7 @@ export default function SubscriberQuerier({countries, setCountries} : { countrie
             location: countries.join(',')
         }
 
-        axios.put("http://127.0.0.1:8000/subscriber", null, { params })
+        axios.put(url + "/subscriber", null, { params })
             .then((response: any) => {
                 hideAll();
                 setRemVis(true);
