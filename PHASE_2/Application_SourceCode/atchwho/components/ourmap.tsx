@@ -147,8 +147,8 @@ export default function OurMap() {
 					</Action>
 					)}
 					{vis && (
-					<Action text="Manage Notifications" onClick={showSubscriber ? handleCloseSubscriber : handleShowSubscriber}>
-						🚫
+					<Action text="Manage Subscribers" onClick={showSubscriber ? handleCloseSubscriber : handleShowSubscriber}>
+						❗
 					</Action>
 					)}
 				</Fab>
