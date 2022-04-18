@@ -6,9 +6,6 @@ import Modal from 'react-bootstrap/Modal'
 const Overlay = () => {
     const [show, setShow] = useState(true);
 
-
-    // Get from local storage whether email exists
-
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
