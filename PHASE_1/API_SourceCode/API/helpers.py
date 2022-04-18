@@ -42,6 +42,67 @@ def get_subscribed(locations):
 
     return results
 
+def update_subscribers(email, locations, method):
+    
+    if method == "GET":
+        query = {
+            "email": email
+        }
+        cursor = db.subscribers.find(query)
+        result = None
+        for dic in cursor:
+            result = dic['locations']
+
+        if result == None:
+            raise HTTPException(status_code=404, detail={"error_message": "No subscriber found with that email"})
+        return result
+
+    if method == "PUT":
+        locations = locations.split(",")
+        query = {
+            "email": email
+        }
+        cursor = db.subscribers.find(query)
+        if len(list(cursor)) > 0:
+            raise HTTPException(status_code=400, detail={"error_message": "A user with that email already exists"})
+
+        query = {
+            "email": email,
+            "locations": locations
+        }
+        db.subscribers.insert_one(query)
+        return locations
+
+    if method == "DELETE":
+
+        query = {
+            "email": email
+        }
+        cursor = db.subscribers.find(query)
+
+        if len(list(cursor)) == 0:
+            raise HTTPException(status_code=404, detail={"error_message": "No subscriber found with that email"})
+
+        cursor = db.subscribers.delete_one(query)
+        return []
+
+    if method == "PATCH":
+        locations = locations.split(",")
+        query1 = {
+            "email": email
+        }
+
+        cursor = db.subscribers.find(query1)
+
+        if len(list(cursor)) == 0:
+            raise HTTPException(status_code=404, detail={"error_message": "No subscriber found with that email"})
+
+        query = {
+            "locations": locations
+        }
+        db.subscribers.find_one_and_update(query1, {'$set': query})
+        return locations
+
 def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, locations: list, limit: int = 20,
                     offset: int = 0):
     query = {

@@ -53,6 +53,7 @@ export default function ArticleQuerier(props: Location) {
         {value: 'bacteria', label: 'Bacteria'},
         {value: 'emerging', label: 'Emerging'},
     ]
+    
     const animatedComponents = makeAnimated();
 
     function handleQueryChange(newValue: OnChangeValue<Option, true>, actionMeta: ActionMeta<Option>) {
