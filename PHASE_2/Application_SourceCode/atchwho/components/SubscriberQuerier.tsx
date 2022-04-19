@@ -4,7 +4,7 @@ import { useState, forwardRef } from 'react';
 const axios = require('axios')
 
 export default function SubscriberQuerier({countries, setCountries} : { countries:any, setCountries:any}) {
-    const url = "https://seng3011-bobby-tables-backend.herokuapp.com/";
+    const url = "https://seng3011-bobby-tables-backend.herokuapp.com";
     const [email, setEmail] = React.useState("");
     const [content, setContent] = React.useState("");
     const [addVis, setAddVis] = React.useState(false);
