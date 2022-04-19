@@ -70,8 +70,8 @@ export default function FlightQuerier() {
                 {resultsState.map((result: any, index: number) => {
                     return (
                         <ListGroup.Item as="div" key={index}>
-                            From {result.origin} on {result.departureDate}<br />
-                            To {result.destination} on {result.returnDate}<br />
+                            From {result.origin} To {result.destination} on {result.departureDate}<br />
+                            From {result.destination}To {result.origin} on {result.returnDate}<br />
                             Price: ${result.price}
                         </ListGroup.Item>
                     )
