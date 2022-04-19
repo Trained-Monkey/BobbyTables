@@ -1,12 +1,18 @@
 import * as React from 'react';
-import { useState, forwardRef } from 'react';
+import { useState } from 'react';
 import { ListGroup, InputGroup, FormControl, Button } from 'react-bootstrap';
 
 export default function FlightQuerier() {
     const Amadeus = require('amadeus');
+    
+    const clientId = process.env.AMADEUS_CLIENT_ID;
+    const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
+
     const amadeus = new Amadeus({
         clientId: 'nrKMtUf0GuX3h7iawhqS4lOSgImGNnCM',
         clientSecret: 'rWueWloyP8J5JDSt',
+        // clientId: clientId,
+        // clientSecret: clientSecret,
     });
 
     const code: string = '';
