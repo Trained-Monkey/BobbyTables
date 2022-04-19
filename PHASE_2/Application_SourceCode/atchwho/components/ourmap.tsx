@@ -3,6 +3,7 @@ import {Popup, Layer, Source, Marker, MapRef, Map} from 'react-map-gl';
 import type {FillLayer} from 'react-map-gl';
 import ArticleQuerier from './ArticleQuerier';
 import FlightQuerier from './FlightQuerier';
+import SubscriberQuerier from './SubscriberQuerier';
 
 import Modal from './ourmodal';
 import { useCallback } from 'react';
@@ -26,6 +27,7 @@ export default function OurMap() {
 	const [showBottom, setShowBottom] = React.useState(false);
 	const [showModal, setShowModal] = React.useState(false);
 	const [showRoutes, setShowRoutes] = React.useState(false);
+	const [showSubscriber, setShowSubscriber] = React.useState(false);
 
   	const handleCloseSide = () => setShowSide(false);
   	const handleShowSide = () => setShowSide(true);
@@ -41,6 +43,9 @@ export default function OurMap() {
 
 	const handleCloseRoutes= () => setShowRoutes(false);
 	const handleShowRoutes = () => setShowRoutes(true);
+	
+	const handleShowSubscriber = () => setShowSubscriber(true);
+	const handleCloseSubscriber = () => setShowSubscriber(false);
 
 	const asia = ['Sri Lanka', 'Kazakhstan', 'Tajikistan', 'Uzbekistan', 'Kyrgyzstan', 'Turkmenistan', 'Afghanistan', 'Pakistan', 'Azerbaijan', 'Armenia', 'Georgia', 'Turkey', 'Iraq', 'Iran', 'Syria', 'Jordan', 'Israel', 'Saudi Arabia', 'Oman', 'Yemen', 'Malaysia', 'Nepal', 'Bangladesh', 'India', 'Mongolia', 'South Korea', 'North Korea', 'Japan', 'China', 'Taiwan', 'Laos', 'Myanmar', 'Thailand', 'Cambodia', 'Vietnam', 'Philippines', 'Indonesia']
 	const africa = ['Saint Helena, Ascension and Tristan da Cunha', 'Portugal', 'Spain', 'Cape Verde', 'Heard and McDonald Islands', 'French Southern and Antarctic Lands', 'Mayotte', 'Comoros', 'Mauritius', 'Reunion', 'Eswatini', 'Rwanda', 'Burundi', 'Malawi', 'Equatorial Guinea', 'Republic of the Congo', 'Gabon', 'Djibouti', 'Eritrea', 'Guinea-Bissau', 'Gambia', 'Benin', 'Togo', 'Ghana', 'Burkina Faso', 'Ivory Coast', 'Liberia', 'Sierra Leone', 'Guinea', 'Senegal', 'Mauritania', 'Mali', 'Morocco', 'Western Sahara', 'Egypt', 'Libya', 'Algeria', 'Niger', 'Nigeria', 'Cameroon', 'Chad', 'Central African Republic', 'Democratic Republic of the Congo', 'South Sudan', 'Sudan', 'Ethiopia', 'Somalia', 'Kenya', 'Uganda', 'Tanzania', 'Angola', 'Zambia', 'Zimbabwe', 'Mozambique', 'Lesotho', 'Botswana', 'Namibia', 'South Africa', 'Madagascar']
@@ -147,6 +152,11 @@ export default function OurMap() {
 					</Action>
 					)}
 					{vis && (
+					<Action text="Manage Subscribers" onClick={showSubscriber ? handleCloseSubscriber : handleShowSubscriber}>
+						❗
+					</Action>
+					)}
+					{vis && (
 					<Action text="Show Routes" onClick={showRoutes ? handleCloseRoutes : handleShowRoutes}>
 						🛫
 					</Action>
@@ -211,6 +221,15 @@ export default function OurMap() {
 					</Offcanvas.Header>
 					<Offcanvas.Body  style={{width: 600}}>
 						<FlightQuerier />
+						</Offcanvas.Body>
+				</Offcanvas>
+				
+				<Offcanvas show={showSubscriber} onHide={handleCloseSubscriber} scroll={true} backdrop={false} style={{width: 600}}>
+					<Offcanvas.Header closeButton>
+					<Offcanvas.Title>Manage Notifications</Offcanvas.Title>
+					</Offcanvas.Header>
+					<Offcanvas.Body  style={{width: 600}}>
+						<SubscriberQuerier countries={selectedCountries} setCountries={setSelectedCountries}/>
 					</Offcanvas.Body>
 				</Offcanvas>
 
