@@ -51,7 +51,10 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "https://seng3011-bobby-tables-backend.herokuapp.com/",
+    "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app/"
+    "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app/*"
     "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app"
+
 
 ]
 
