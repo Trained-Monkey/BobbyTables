@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { ListGroup, InputGroup, FormControl, Button } from 'react-bootstrap';
 
+
 export default function FlightQuerier() {
     const Amadeus = require('amadeus');
     
@@ -68,7 +69,7 @@ export default function FlightQuerier() {
             <ListGroup as="div">
                 {resultsState.map((result: any, index: number) => {
                     return (
-                        <ListGroup.Item as="button" key={index}>
+                        <ListGroup.Item as="div" key={index}>
                             From {result.origin} on {result.departureDate}<br />
                             To {result.destination} on {result.returnDate}<br />
                             Price: ${result.price}
