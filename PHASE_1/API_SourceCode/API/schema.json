@@ -713,6 +713,286 @@
                 }
             }
         },
+        "/subscriber": {
+            "get": {
+                "tags": [
+                    "Subscriber"
+                ],
+                "summary": "Get Subscriber",
+                "operationId": "get_subscriber_subscriber_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Email",
+                            "type": "string"
+                        },
+                        "example": "test@gmail.com",
+                        "name": "email",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "location": "Malawi,Sydney"
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No subscriber found with that email"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Subscriber"
+                ],
+                "summary": "Add Subscriber",
+                "operationId": "add_subscriber_subscriber_put",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Location",
+                            "type": "string"
+                        },
+                        "example": "Malawi",
+                        "name": "location",
+                        "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Email",
+                            "type": "string"
+                        },
+                        "example": "test@gmail.com",
+                        "name": "email",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "location": "Malawi,Sydney"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Subscriber"
+                ],
+                "summary": "Remove Subscriber",
+                "operationId": "remove_subscriber_subscriber_delete",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Email",
+                            "type": "string"
+                        },
+                        "example": "test@gmail.com",
+                        "name": "email",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Success"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": {
+                                        "error_message": "No subscriber found with that email"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": {
+                                        "error_message": "Internal server error"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "options": {
+                "tags": [
+                    "Subscriber"
+                ],
+                "summary": "Option Subscriber",
+                "operationId": "option_subscriber_subscriber_options",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTP_500"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Subscriber"
+                ],
+                "summary": "Update Subscriber",
+                "operationId": "update_subscriber_subscriber_patch",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Email",
+                            "type": "string"
+                        },
+                        "example": "test@gmail.com",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Location",
+                            "type": "string"
+                        },
+                        "example": "Malawi",
+                        "name": "location",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "location": "Malawi,Sydney"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "No subscriber found with that email"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": {
+                                            "error_message": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/healthcheck": {
             "get": {
                 "summary": "Perform Healthcheck",
