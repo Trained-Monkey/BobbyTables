@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Script from 'next/script';
 
 import OurMap from '../components/ourmap';
+import Overlay from '../components/LandingPage/Overlay';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -21,6 +22,7 @@ export default function Home() {
 		<Script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 		<Script src="../styles/hehe.css" />
 		<body style={{overflow: 'hidden', margin: 'auto'}}>
+			<Overlay />
 			<OurMap />
 		</body>
 		</html>

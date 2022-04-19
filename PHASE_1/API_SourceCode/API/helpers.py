@@ -29,6 +29,80 @@ def set_db(new_db = None):
         latest_scraper_version = "0.0.9"
         db = new_db
 
+def get_subscribed(locations):
+    results = []
+    
+    query = {
+        'locations' : {"$in": locations}
+    }
+
+    cursor = db.subscribers.find(query)
+    for dic in cursor:
+        results.append(dic['email'])
+
+    return results
+
+def update_subscribers(email, locations, method):
+    
+    if method == "GET":
+        query = {
+            "email": email
+        }
+        cursor = db.subscribers.find(query)
+        result = None
+        for dic in cursor:
+            result = dic['locations']
+
+        if result == None:
+            raise HTTPException(status_code=404, detail={"error_message": "No subscriber found with that email"})
+        return result
+
+    if method == "PUT":
+        locations = locations.split(",")
+        query = {
+            "email": email
+        }
+        cursor = db.subscribers.find(query)
+        if len(list(cursor)) > 0:
+            raise HTTPException(status_code=400, detail={"error_message": "A user with that email already exists"})
+
+        query = {
+            "email": email,
+            "locations": locations
+        }
+        db.subscribers.insert_one(query)
+        return locations
+
+    if method == "DELETE":
+
+        query = {
+            "email": email
+        }
+        cursor = db.subscribers.find(query)
+
+        if len(list(cursor)) == 0:
+            raise HTTPException(status_code=404, detail={"error_message": "No subscriber found with that email"})
+
+        cursor = db.subscribers.delete_one(query)
+        return []
+
+    if method == "PATCH":
+        locations = locations.split(",")
+        query1 = {
+            "email": email
+        }
+
+        cursor = db.subscribers.find(query1)
+
+        if len(list(cursor)) == 0:
+            raise HTTPException(status_code=404, detail={"error_message": "No subscriber found with that email"})
+
+        query = {
+            "locations": locations
+        }
+        db.subscribers.find_one_and_update(query1, {'$set': query})
+        return locations
+
 def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, locations: list, limit: int = 20,
                     offset: int = 0):
     query = {
@@ -58,15 +132,45 @@ def filter_articles(end_date: datetime, start_date: datetime, key_terms: list, l
     max_amount = db.articles.count_documents(query)
     return articles, ids, max_amount
 
+def get_articles_within_time(end_date: datetime, start_date: datetime):
+    query = {
+        'scraper_version': latest_scraper_version,
+        'date_of_publication': {'$lte': end_date, '$gte': start_date},
+    }
+
+    print(query)
+    cursor = db.articles.find(query)
+    
+    articles = []
+    ids = []
+    locations = []
+    for dic in cursor:
+        reports = process_reports(dic)
+        article = Article(
+            url=dic['url'],
+            date_of_publication=dic['date_of_publication'].strftime("%Y-%m-%dT%H:%M:%S"),
+            headline=dic['headline'],
+            main_text=dic['main_text'],
+            reports=reports
+        )
+
+        locations.append((dic['locations'], article))
+        articles.append(article)
+        ids.append(dic['id'])
+
+    max_amount = db.articles.count_documents(query)
+    return articles, ids, max_amount, locations
 
 def process_reports(article):
     reports = []
     for report_dict in article['reports']:
         locations = []
-        for location_name in report_dict['locations']:
+        for location_obj in report_dict['locations']:
             location = Location(
-                country='',
-                location=location_name
+                country=location_obj['country'],
+                location=location_obj['location'],
+                lat=location_obj['lat'],
+                lng=location_obj['lng']
             )
             locations.append(location)
         report = Report(

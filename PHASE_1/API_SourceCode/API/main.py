@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.openapi.utils import get_openapi
 from fastapi import Query, Header
 from fastapi import status
@@ -6,6 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
+from typing import List
+
+from Notifier.Notifier import Notifier
 # from fastapi import exception_handler
 import json
 
@@ -24,26 +27,41 @@ import traceback
 
 import helpers
 from helpers import start_logging
+from helpers import update_subscribers
 from datetime import datetime
+
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 tags_metadata = [
     {
         "name": "Article",
         "description": "Operations on retrieving from articles",
+    },
+    {
+        "name": "Subscriber",
+        "description": "Operations on adding, updating and deleting subscribers"
     }
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
 
 origins = [
+    "*",
     "http://localhost",
-    "*"
+    "http://localhost:3000",
+    "https://seng3011-bobby-tables-backend.herokuapp.com/",
+    "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app/"
+    "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app/*"
+    "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app"
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.exception_handler(RequestValidationError)
@@ -51,6 +69,15 @@ async def missing_parameters(request, exception):
     return JSONResponse({
         "error_message": "Bad request"
     }, status_code = 400)
+
+email_notifier = Notifier()
+@app.on_event("startup")
+async def startup_event():
+    email_notifier.start()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    email_notifier.end()
     
 """
 Routes set up according to stoplight documentation
@@ -67,7 +94,7 @@ Parameters:
  * end_date: string, required     - Inclusive end_date of publication range, format:yyyy-MM-ddTHH:mm:ss
  * start_date: string, required   - Inclusive start_date of publication range, format:yyyy-MM-ddTHH:mm:ss
  * key_terms: string, required    - Comma separated values of keyterms to be contained in articles
- * location: string, required     - Values of location to extract articles from
+ * location: string, required     - Comma separated values of location to extract articles from
  * limit: integer                 - Maximum number of articles to return in list
  * offset: integer                - Number of articles to skip
 
@@ -355,6 +382,46 @@ async def article_report(
     reports = helpers.get_reports(articleId)
     return {"reports": reports}
 
+@app.put("/subscriber", tags=["Subscriber"], responses=responses, response_model_exclude_unset=True)
+@start_logging
+async def add_subscriber(
+    request: Request,
+    email: str = Query(..., example="test@gmail.com"),
+    location: str = Query(..., example="Malawi")):
+    result = update_subscribers(email, location, "PUT")
+    return {"locations": result }
+
+@app.get("/subscriber", tags=["Subscriber"], responses=responses, response_model_exclude_unset=True)
+@start_logging
+async def get_subscriber(
+    request: Request,
+    email: str = Query(..., example="test@gmail.com")):
+    result = update_subscribers(email, None, "GET")
+    return {"locations": result }
+
+@app.delete("/subscriber", tags=["Subscriber"], responses=responses, response_model_exclude_unset=True)
+@start_logging
+async def remove_subscriber(
+    request: Request,
+    email: str = Query(..., example="test@gmail.com")):
+    result = update_subscribers(email, None, "DELETE")
+    return {"details": "Success"}
+
+@app.patch("/subscriber", tags=["Subscriber"], responses=responses, response_model_exclude_unset=True)
+@start_logging
+async def update_subscriber(
+    request: Request,
+    email: str = Query(..., example="test@gmail.com"),
+    location: str = Query(..., example="Malawi")):
+    result = update_subscribers(email, location, "PATCH")
+    return {"locations": result }
+
+# @app.options("/subscriber", tags=["Subscriber"], responses=responses, response_model_exclude_unset=True)
+# @start_logging
+# async def option_subscriber(request: Request, response: Response, email: str = Query(..., example="test@gmail.com")):
+#     print("Received options")
+#     response["Access-Control-Allow-Methods"] = ["GET","PUT","PATCH","DELETE"]
+#     return {}
 
 @app.get("/healthcheck", status_code=status.HTTP_200_OK)
 # @start_logging
@@ -380,8 +447,23 @@ def perform_healthcheck():
     return {'healthcheck': 'Everything OK!'}
 
 def custom_openapi():    
+    with open("new_schema.json", "w+") as FILE:
+        openapi_schema = get_openapi(
+        title="Custom title",
+        version="2.5.0",
+        description="This is a very custom OpenAPI schema",
+        routes=app.routes,
+        )
+
+        FILE.write(json.dumps(openapi_schema))
+
+        print("Dumped")
+        
+
     with open("schema.json", "r+") as FILE:
         openapi_schema = json.load(FILE)
+
+        
 
     openapi_schema["paths"]["/article/{articleId}/content"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"content" : "string"}
     openapi_schema["paths"]["/article/{articleId}/response"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["example"] = {"response" : "string"}
