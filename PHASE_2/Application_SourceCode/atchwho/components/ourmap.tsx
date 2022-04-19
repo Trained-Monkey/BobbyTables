@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Popup, Layer, Source, Marker, MapRef, Map} from 'react-map-gl';
 import type {FillLayer} from 'react-map-gl';
 import ArticleQuerier from './ArticleQuerier';
+import FlightQuerier from './FlightQuerier';
 import SubscriberQuerier from './SubscriberQuerier';
 
 import Modal from './ourmodal';
@@ -25,6 +26,7 @@ export default function OurMap() {
 	const [showSide1, setShowSide1] = React.useState(false);
 	const [showBottom, setShowBottom] = React.useState(false);
 	const [showModal, setShowModal] = React.useState(false);
+	const [showRoutes, setShowRoutes] = React.useState(false);
 	const [showSubscriber, setShowSubscriber] = React.useState(false);
 
   	const handleCloseSide = () => setShowSide(false);
@@ -39,6 +41,9 @@ export default function OurMap() {
 	const handleCloseModal= () => setShowModal(false);
   	const handleShowModal = () => setShowModal(true);
 
+	const handleCloseRoutes= () => setShowRoutes(false);
+	const handleShowRoutes = () => setShowRoutes(true);
+	
 	const handleShowSubscriber = () => setShowSubscriber(true);
 	const handleCloseSubscriber = () => setShowSubscriber(false);
 
@@ -151,6 +156,11 @@ export default function OurMap() {
 						❗
 					</Action>
 					)}
+					{vis && (
+					<Action text="Show Routes" onClick={showRoutes ? handleCloseRoutes : handleShowRoutes}>
+						🛫
+					</Action>
+					)}
 				</Fab>
 
 				<button onClick={() => setVis1(!vis1)}>
@@ -205,6 +215,15 @@ export default function OurMap() {
 			</Map>
 
 			<div id='offCanvas-root'>
+				<Offcanvas show={showRoutes} onHide={handleCloseRoutes} scroll={true} backdrop={false} style={{width: 600}}>
+					<Offcanvas.Header closeButton>
+						<Offcanvas.Title>Search Recommanded Trips</Offcanvas.Title>
+					</Offcanvas.Header>
+					<Offcanvas.Body  style={{width: 600}}>
+						<FlightQuerier />
+						</Offcanvas.Body>
+				</Offcanvas>
+				
 				<Offcanvas show={showSubscriber} onHide={handleCloseSubscriber} scroll={true} backdrop={false} style={{width: 600}}>
 					<Offcanvas.Header closeButton>
 					<Offcanvas.Title>Manage Notifications</Offcanvas.Title>
