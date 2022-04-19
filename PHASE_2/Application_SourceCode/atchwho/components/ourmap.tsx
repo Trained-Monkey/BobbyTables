@@ -217,7 +217,7 @@ export default function OurMap() {
 			<div id='offCanvas-root'>
 				<Offcanvas show={showRoutes} onHide={handleCloseRoutes} scroll={true} backdrop={false} style={{width: 600}}>
 					<Offcanvas.Header closeButton>
-						<Offcanvas.Title>Search Recommanded Flights</Offcanvas.Title>
+						<Offcanvas.Title>Search Recommanded Trips</Offcanvas.Title>
 					</Offcanvas.Header>
 					<Offcanvas.Body  style={{width: 600}}>
 						<FlightQuerier />

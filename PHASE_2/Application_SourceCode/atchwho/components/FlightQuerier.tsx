@@ -71,7 +71,7 @@ export default function FlightQuerier() {
                     return (
                         <ListGroup.Item as="div" key={index}>
                             From {result.origin} To {result.destination} on {result.departureDate}<br />
-                            From {result.destination}To {result.origin} on {result.returnDate}<br />
+                            From {result.destination} To {result.origin} on {result.returnDate}<br />
                             Price: ${result.price}
                         </ListGroup.Item>
                     )
