@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Script from 'next/script';
 
 import OurMap from '../components/ourmap';
-import Overlay from '../components/Overlay';
+import Overlay from '../components/LandingPage/Overlay';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
