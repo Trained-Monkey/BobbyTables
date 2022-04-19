@@ -55,14 +55,12 @@ origins = [
     "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app/"
     "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app/*"
     "https://seng-3011-bobby-tables-git-bt-66-subscription-9e9684-j-clarisse.vercel.app"
-
-
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
