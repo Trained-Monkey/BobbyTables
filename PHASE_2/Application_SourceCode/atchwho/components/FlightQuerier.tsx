@@ -65,7 +65,7 @@ export default function FlightQuerier() {
                         <ListGroup.Item as="button" key={index}>
                             From {result.origin} on {result.departureDate}<br />
                             To {result.destination} on {result.returnDate}<br />
-                            Price: {result.price}
+                            Price: ${result.price}
                         </ListGroup.Item>
                     )
                 })}
