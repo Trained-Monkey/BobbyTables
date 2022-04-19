@@ -9,6 +9,9 @@ export default function FlightQuerier() {
         clientSecret: 'rWueWloyP8J5JDSt',
     });
 
+    const code: string = '';
+    const [airport, setAirport] = useState(code);
+
     const flightResults: any[] = []
     const [resultsState, setResultsState] = useState(flightResults)
 
@@ -37,6 +40,10 @@ export default function FlightQuerier() {
         });
     }
 
+    function handleAirportCodeChange(event: any) {
+        setAirport(event.target.value);
+    }
+
     // return a searchbar which allows the user to search for destinations based on the input
     // return a list of destinations based on the input
     return (
@@ -46,15 +53,16 @@ export default function FlightQuerier() {
                     placeholder="Departure Airport Code"
                     aria-label="Departure Airport Code"
                     aria-describedby="basic-addon2"
+                    onChange={(event) => handleAirportCodeChange(event)}
                 />
-                <Button variant="outline-secondary" id="button-addon2" onClick={() => {getDestinations('SIN')}}>
+                <Button variant="outline-secondary" id="button-addon2" onClick={() => {getDestinations(airport)}}>
                     Search
                 </Button>
             </InputGroup>
             <ListGroup as="div">
-                {resultsState.map((result: any) => {
+                {resultsState.map((result: any, index: number) => {
                     return (
-                        <ListGroup.Item as="button">
+                        <ListGroup.Item as="button" key={index}>
                             From {result.origin} on {result.departureDate}<br />
                             To {result.destination} on {result.returnDate}<br />
                             Price: {result.price}
